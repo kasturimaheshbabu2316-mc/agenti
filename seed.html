@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head><title>Seeding PMM 3 Demo Data</title></head>
+<body>
+<script>
+const mockState = {
+  nextId: 3,
+  startPts: 1000,
+  lots: [
+    {
+      id: 1,
+      type: "qa",
+      mode: "text",
+      topic: "Tablet Disintegration Mechanics",
+      subject: "Physical Pharmaceutics · Unit II",
+      hint: "Evaluate the capillary action and swelling mechanisms that govern rapid disintegration in oral tablets.",
+      difficulty: "Medium",
+      q: "Explain how sodium starch glycolate promotes rapid disintegration in immediate-release formulations.",
+      accept: ["swelling", "water uptake", "capillary action"],
+      start: 50,
+      inc: 10,
+      mins: 2,
+      answerSecs: 60,
+      endsAt: Date.now() + 90000
+    },
+    {
+      id: 2,
+      type: "matching",
+      mode: "match",
+      topic: "Excipient Classifications & Polymers",
+      subject: "Industrial Pharmacy · Unit I",
+      hint: "Match standard pharmaceutical excipients with their primary functional roles.",
+      difficulty: "Hard",
+      q: "Match each excipient with its primary functional mechanism.",
+      pairs: [
+        { l: "Microcrystalline Cellulose", r: "Direct compression binder" },
+        { l: "Magnesium Stearate", r: "Boundary lubricant" },
+        { l: "Croscarmellose Sodium", r: "Superdisintegrant via wicking" },
+        { l: "Colloidal Silicon Dioxide", r: "Glidant and moisture scavenger" }
+      ],
+      start: 80,
+      inc: 20,
+      mins: 3,
+      answerSecs: 90,
+      endsAt: Date.now() + 150000
+    }
+  ],
+  bids: [
+    { lotId: 1, name: "💊 BioMatrix", amount: 120, at: Date.now() - 30000 },
+    { lotId: 1, name: "⚡ NanoPharm", amount: 150, at: Date.now() - 10000 },
+    { lotId: 2, name: "🧬 GeneTherapy", amount: 100, at: Date.now() - 5000 }
+  ],
+  answers: [],
+  base: { "💊 biomatrix": 1200, "⚡ nanopharm": 1050, "🧬 genetherapy": 980 },
+  epoch: 0,
+  roster: ["💊 BioMatrix", "⚡ NanoPharm", "🧬 GeneTherapy", "Synergy Pharma"],
+  renamed: [],
+  removed: {},
+  drafts: [
+    {
+      did: 1,
+      type: "blank",
+      mode: "text",
+      topic: "Noyes-Whitney Dissolution",
+      subject: "Biopharmaceutics",
+      difficulty: "Medium",
+      q: "The rate of dissolution is described by the ____ equation.",
+      accept: ["Noyes-Whitney", "Noyes Whitney"],
+      start: 60,
+      inc: 10,
+      mins: 2,
+      answerSecs: 45
+    }
+  ],
+  nextDraft: 2
+};
+localStorage.setItem('pmm3-v1', JSON.stringify(mockState));
+localStorage.setItem('pmm3-team', '💊 BioMatrix');
+sessionStorage.setItem('pmm3-admin', '1');
+const target = window.location.search.includes('admin') ? 'admin.html' : window.location.search.includes('live') ? 'live.html' : 'index.html';
+window.location.replace(target);
+</script>
+</body>
+</html>

@@ -1,12 +1,13 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05060a">
   <title>PMM 3 – Pharmaceutics Mastery Matrix 3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -41,7 +42,7 @@
           <div class="wallet" id="wallet" aria-live="polite"></div>
         </div>
         <label class="pill">Team
-          <input id="bidder" maxlength="24" placeholder="Your team" autocomplete="off">
+          <input id="bidder" type="text" maxlength="24" placeholder="Your team" autocomplete="off">
           <span class="avatar" id="avatar" aria-hidden="true">?</span>
         </label>
       </header>
@@ -88,8 +89,8 @@
       <div class="quick" id="quick"></div>
       <p class="err" id="bidErr" role="alert"></p>
       <div class="row">
-        <button value="cancel" class="ghost" type="submit" formnovalidate>Cancel</button>
-        <button id="bidGo" type="button" class="primary">Place bid</button>
+        <button id="bidCancel" value="cancel" class="ghost" type="button">Cancel</button>
+        <button id="bidGo" type="submit" class="primary">Place bid</button>
       </div>
     </form>
   </dialog>

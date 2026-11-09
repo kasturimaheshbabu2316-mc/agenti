@@ -5,7 +5,14 @@
 
   const SEL = "button, select, textarea, input, a, .pill, .search";
   const REST = ".menu button.on, .menu a.on, .seg button.on"; // active menu items keep a gentle sparkle
-  const COLORS = [[255, 255, 255], [176, 214, 240], [196, 181, 245], [196, 181, 245], [255, 179, 138], [255, 179, 138]]; // powder blue, lavender, peach glints
+  const COLORS = [
+    [255, 255, 255], // Diamond white
+    [126, 231, 248], // Powder cyan
+    [196, 181, 245], // Radiant lavender
+    [167, 139, 250], // Deep lavender
+    [255, 179, 138], // Warm sunset peach
+    [52, 211, 153],  // Emerald success
+  ];
   const MAX = 240;
 
   const cv = document.createElement("canvas");
@@ -15,7 +22,9 @@
   let W = 0, H = 0;
   function size() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth; H = window.innerHeight;
+    const host = cv.parentNode && cv.parentNode !== document.body ? cv.parentNode : null;
+    const r = host ? host.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
+    W = r.width; H = r.height;
     cv.width = W * dpr; cv.height = H * dpr;
     cv.style.width = W + "px"; cv.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -32,8 +41,9 @@
   };
   function rectOf(el) {
     const r = el.getBoundingClientRect();
+    const cr = cv.getBoundingClientRect();
     const rad = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, r.width / 2, r.height / 2);
-    return { x: r.left, y: r.top, w: r.width, h: r.height, rad };
+    return { x: r.left - cr.left, y: r.top - cr.top, w: r.width, h: r.height, rad };
   }
   function inside(r, px, py) {
     const dx = Math.max(r.x + r.rad - px, 0, px - (r.x + r.w - r.rad));
@@ -79,7 +89,10 @@
   function frame(t) {
     const modal = document.querySelector("dialog[open]");
     const host = modal || document.body;
-    if (cv.parentNode !== host) host.appendChild(cv);
+    if (cv.parentNode !== host) {
+      host.appendChild(cv);
+      size();
+    }
 
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
     ctx.clearRect(0, 0, W, H);
@@ -97,7 +110,7 @@
           const e = 1 - Math.pow(1 - p, 3), bw = r.w * 0.45, bx = r.x - bw + (r.w + bw * 2) * e;
           ctx.save(); roundPath(r); ctx.clip();
           const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
-          g.addColorStop(0, "rgba(200,185,250,0)"); g.addColorStop(0.5, `rgba(235,228,255,${0.42 * (1 - p * 0.5)})`); g.addColorStop(1, "rgba(200,185,250,0)");
+          g.addColorStop(0, "rgba(126,231,248,0)"); g.addColorStop(0.5, `rgba(235,228,255,${0.45 * (1 - p * 0.5)})`); g.addColorStop(1, "rgba(196,181,245,0)");
           ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.restore();
         }
       }
@@ -139,7 +152,11 @@
   }
 
   document.addEventListener("pointerover", (e) => { hover = pick(e.target); update(); });
-  document.addEventListener("pointermove", (e) => { lx = e.clientX; ly = e.clientY; });
+  document.addEventListener("pointermove", (e) => {
+    const cr = cv.getBoundingClientRect();
+    lx = e.clientX - cr.left;
+    ly = e.clientY - cr.top;
+  });
   document.documentElement.addEventListener("mouseleave", () => { hover = null; update(); });
   document.addEventListener("pointerup", (e) => {
     if (e.pointerType !== "touch") return;

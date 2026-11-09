@@ -113,6 +113,15 @@ $("#teamRows").addEventListener("click", (e) => {
     renderTeams(); renderRows(); toast(`Removed ${name}`);
   }
 });
+$("#teamRows").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.classList.contains("ptsin")) {
+    const tr = e.target.closest("tr[data-team]");
+    if (tr) {
+      const btn = tr.querySelector("[data-save-pts]");
+      if (btn) btn.click();
+    }
+  }
+});
 
 /* ---------- question types in the form ---------- */
 const REASON_OPTS = [
@@ -243,7 +252,7 @@ function renderDrafts() {
       <td>${pts(d.start)} pts start · ${d.mins} min</td>
       <td>${correctHTML(d)}</td>
       <td class="acts">
-        <button class="primary" data-release="${d.did}" type="button" style="height:36px;padding:0 18px">Release</button>
+        <button class="primary" data-release="${d.did}" type="button">Release</button>
         <button class="ghost danger" data-del-draft="${d.did}" type="button">Delete</button>
       </td></tr>`;
   }).join("");
@@ -287,6 +296,7 @@ $("#saveSettings").addEventListener("click", () => {
   if (!(v > 0)) { toast("Enter a number of points above 0"); return; }
   state = load(); state.startPts = v; save(state); toast("Settings saved");
 });
+$("#sPts").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#saveSettings").click(); });
 $("#clearAll").addEventListener("click", () => {
   state = load();
   if (!state.lots.length && !state.bids.length) { toast("Nothing to clear"); return; }

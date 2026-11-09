@@ -179,7 +179,9 @@ function renderFeed() {
 
 function renderWallet() {
   const n = me(), w = $("#wallet");
-  $("#avatar").textContent = n ? n[0].toUpperCase() : "?";
+  const char = n ? Array.from(n)[0] : "?";
+  $("#avatar").textContent = char ? char.toUpperCase() : "?";
+  $("#avatar").title = n || "No team selected";
   if (!n) { w.dataset.team = ""; w.innerHTML = '<span class="tl">Enter your team name to see your score</span>'; return; }
   const locked = entered(n);
   let inp = $("#myPts");
@@ -347,7 +349,10 @@ $("#wallet").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.tar
 $("#wallet").addEventListener("input", (e) => { if (e.target.id === "myPts") e.target.dataset.dirty = "1"; });
 $("#search").addEventListener("input", () => { pick = null; renderHero(); });
 $("#quick").addEventListener("click", (e) => { const b = e.target.closest("[data-amt]"); if (b) $("#bidAmount").value = b.dataset.amt; });
+$("#bidForm").addEventListener("submit", (e) => { e.preventDefault(); placeBid(); });
 $("#bidGo").addEventListener("click", placeBid);
+const cancelBtn = $("#bidCancel");
+if (cancelBtn) cancelBtn.addEventListener("click", () => $("#bidDialog").close());
 $("#filters").addEventListener("click", (e) => {
   const b = e.target.closest("[data-f]"); if (!b) return;
   filter = b.dataset.f;
@@ -363,6 +368,7 @@ $("#metric").addEventListener("click", (e) => {
 $("#bidder").value = localStorage.getItem("pmm3-team") || "";
 syncEpoch();
 $("#bidder").addEventListener("input", (e) => { localStorage.setItem("pmm3-team", e.target.value.trim()); pick = null; renderHero(); renderWallet(); renderChart(); });
+$("#bidder").addEventListener("keydown", (e) => { if (e.key === "Enter") { registerTeam(); e.target.blur(); } });
 $("#bidder").addEventListener("change", registerTeam);
 registerTeam();
 window.addEventListener("storage", (e) => { if (e.key === KEY) { state = load(); syncEpoch(); render(); } });
