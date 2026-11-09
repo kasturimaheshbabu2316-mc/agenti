@@ -23,7 +23,7 @@ function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); return tr
 let state = load();
 
 const $ = (s) => document.querySelector(s);
-const pts = (n) => Number(n).toLocaleString("en-IN");
+const pts = (n) => Number(n || 0).toLocaleString("en-IN");
 const nk = (s) => String(s).trim().toLowerCase();
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
