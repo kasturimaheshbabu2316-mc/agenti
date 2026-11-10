@@ -18,7 +18,18 @@ function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) return Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
   return blank();
 }
-function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); return true; } catch (e) { return false; } }
+function save(s, broadcast = true) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(s));
+    const g = typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : null);
+    if (broadcast && g && g.PMM_SYNC) {
+      g.PMM_SYNC.pushState(s);
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 let state = load();
 

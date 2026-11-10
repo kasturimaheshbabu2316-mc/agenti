@@ -1,6 +1,8 @@
 /* Spotlight effect: a light cone with a bright cap that slides between buttons, inputs and menus.
    One floating element follows whatever you hover or focus. Include after the other scripts. */
 (function () {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
   const SEL = "button, select, textarea, input, .pill";
   const spot = document.createElement("div");
   spot.className = "spot";
@@ -17,9 +19,17 @@
   function place() {
     if (!cur || !cur.isConnected) return;
     const r = cur.getBoundingClientRect();
+    const host = hostOf(cur);
+    if (host !== document.body) {
+      spot.style.position = "absolute";
+      const hr = host.getBoundingClientRect();
+      spot.style.transform = `translate(${r.left - hr.left}px, ${r.top - hr.top}px)`;
+    } else {
+      spot.style.position = "fixed";
+      spot.style.transform = `translate(${r.left}px, ${r.top}px)`;
+    }
     spot.style.width = r.width + "px";
     spot.style.height = r.height + "px";
-    spot.style.transform = `translate(${r.left}px, ${r.top}px)`;
     spot.style.borderRadius = getComputedStyle(cur).borderRadius;
     spot.style.setProperty("--cw", Math.round(Math.min(Math.max(r.width * 1.3, 90), 240)) + "px");
     if (r.width <= 240) spot.style.setProperty("--cx", "50%");

@@ -2809,3 +2809,382 @@ body.live {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   AI Multi-Agent, RAG Knowledge & Advanced Tooling Additions
+   ========================================================================== */
+.hub-nav {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.ai-nav-btn {
+  background: linear-gradient(135deg, rgba(126, 231, 248, 0.12) 0%, rgba(196, 181, 245, 0.12) 100%);
+  border: 1px solid rgba(196, 181, 245, 0.28);
+  color: var(--text);
+  font-weight: 600;
+}
+.ai-nav-btn:hover {
+  border-color: var(--lav);
+  box-shadow: 0 0 16px var(--lav-glow);
+}
+
+.sfxbtn {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+.sfxbtn:hover {
+  opacity: 1;
+}
+
+.ai-card {
+  border: 1px solid rgba(196, 181, 245, 0.28);
+  background: radial-gradient(circle at top right, rgba(196, 181, 245, 0.08) 0%, var(--bg-card) 60%);
+}
+
+.bank-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ai-controls {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.filebtn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+}
+
+/* AI Tutor Drawer & Cards */
+.ai-tutor-card {
+  margin-top: 20px;
+  border: 1px solid rgba(126, 231, 248, 0.3);
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.09) 0%, var(--bg-card) 60%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(56, 189, 248, 0.1);
+}
+
+.ai-input-wrap {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.ai-input-wrap input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+.ai-input-wrap input:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 14px var(--cyan-glow);
+}
+
+.chiprow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.chiprow .chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.chiprow .chip:hover {
+  background: rgba(126, 231, 248, 0.15);
+  border-color: var(--cyan);
+  color: var(--text);
+}
+
+.ai-output {
+  margin-top: 14px;
+}
+
+.ai-msg {
+  padding: 14px 18px;
+  background: rgba(8, 12, 28, 0.7);
+  border: 1px solid rgba(126, 231, 248, 0.2);
+  border-radius: var(--r-sm);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.ai-msg code {
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--powder);
+}
+
+/* RAG Explainer in Question Card */
+.rag-explainer-bar {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+
+.rag-btn {
+  font-size: 0.88rem;
+  border-color: rgba(196, 181, 245, 0.4);
+  color: var(--lav);
+}
+
+.rag-btn:hover {
+  background: rgba(196, 181, 245, 0.1);
+  box-shadow: 0 0 12px var(--lav-glow);
+}
+
+.rag-exp-box {
+  margin-top: 12px;
+  padding: 16px 20px;
+  background: rgba(12, 16, 36, 0.85);
+  border: 1px solid rgba(196, 181, 245, 0.3);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.rag-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+  color: var(--lav);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rag-content h4 small {
+  color: var(--mute);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.rag-principle {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+  margin: 0 0 10px 0;
+}
+
+.rag-formula {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border-left: 3px solid var(--powder);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--powder);
+}
+
+.rag-takeaway {
+  font-size: 0.9rem;
+  color: var(--peach);
+  margin: 8px 0 4px 0;
+}
+
+.rag-ref {
+  font-size: 0.8rem;
+  color: var(--mute-deep);
+  margin: 4px 0 0 0;
+}
+
+/* Tactical Bid Advice Box in Bid Dialog */
+.bid-advice-box {
+  margin: 10px 0 16px 0;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: rgba(15, 20, 42, 0.7);
+  border: 1px solid var(--line);
+}
+
+.bid-advice-box p {
+  margin: 6px 0 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.adv-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tier-safe .adv-badge {
+  background: rgba(52, 211, 153, 0.2);
+  color: var(--emerald);
+  border: 1px solid var(--emerald);
+}
+
+.tier-balanced .adv-badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+}
+
+.tier-aggressive .adv-badge {
+  background: rgba(167, 139, 250, 0.2);
+  color: var(--lav);
+  border: 1px solid var(--lav);
+}
+
+.tier-high-risk .adv-badge {
+  background: rgba(251, 146, 60, 0.2);
+  color: var(--peach);
+  border: 1px solid var(--peach);
+}
+
+.tier-danger .adv-badge {
+  background: rgba(244, 63, 94, 0.2);
+  color: var(--coral);
+  border: 1px solid var(--coral);
+}
+
+/* ---------- Interactive Spotlight Light-Cone ---------- */
+.spot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  box-sizing: border-box;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+  background: radial-gradient(var(--cw, 140px) circle at var(--cx, 50%) 0%, rgba(56, 189, 248, 0.14), transparent 75%);
+  border: 1px solid rgba(126, 231, 248, 0.28);
+  box-shadow: 0 0 20px -2px rgba(56, 189, 248, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.spot.snap {
+  transition: none !important;
+}
+
+.spot.on {
+  opacity: 1;
+}
+
+/* ---------- Realtime Sync Status Badge ---------- */
+.sync-wrap {
+  margin: 4px 0 12px 0;
+}
+
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.sync-badge.live {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.35);
+  color: var(--emerald);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
+}
+
+.sync-badge.live i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 8px var(--emerald);
+  animation: pulseSync 2s infinite ease-in-out;
+}
+
+.sync-badge.connecting {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: var(--cyan);
+}
+
+.sync-badge.connecting i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: pulseSync 1s infinite ease-in-out;
+}
+
+.sync-badge.offline {
+  background: rgba(255, 179, 138, 0.08);
+  border-color: rgba(255, 179, 138, 0.25);
+  color: var(--peach);
+}
+
+.sync-badge.offline i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--peach);
+}
+
+@keyframes pulseSync {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+

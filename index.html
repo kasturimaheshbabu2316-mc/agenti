@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#05060a">
   <title>PMM 3 – Pharmaceutics Mastery Matrix 3</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
@@ -14,6 +16,9 @@
   <div class="app">
     <aside class="side">
       <h1 class="brand">PMM<span>3</span><small>Pharmaceutics Mastery Matrix 3</small></h1>
+      <div class="sync-wrap">
+        <span id="syncBadge" class="sync-badge offline" title="Multi-device synchronization status"><i></i><span class="sync-text">Local Mode</span></span>
+      </div>
 
       <nav class="menu" id="filters" aria-label="Filter questions">
         <button data-f="all" class="on" type="button">
@@ -29,6 +34,22 @@
           Closed
         </button>
       </nav>
+
+      <nav class="menu hub-nav" aria-label="Views and Tools">
+        <button id="aiToggleBtn" type="button" class="ai-nav-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+          AI Study Agent
+        </button>
+        <a href="live.html" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          Score Board
+        </a>
+        <a href="admin.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.3 6.8 19.1l1-5.8L3.5 9.2l5.9-.9L12 3z"/></svg>
+          Quiz Master
+        </a>
+      </nav>
+      <button id="sfxToggleBtn" class="ghost sfxbtn" type="button" aria-label="Toggle sound effects">Sound: On</button>
     </aside>
 
     <div class="content">
@@ -69,6 +90,26 @@
           </section>
 
           <section class="card rules" id="rules" aria-label="How it works"></section>
+
+          <section class="card ai-tutor-card" id="aiTutorCard" aria-label="AI Study Mentor" hidden>
+            <div class="charthead">
+              <h2>AI Pharma Mentor (RAG Engine)</h2>
+              <button id="aiCloseBtn" class="ghost" type="button">Close</button>
+            </div>
+            <p class="hint">Ask any Pharmaceutics concept (Physical Pharmacy, Pharmacokinetics, BCS, Tablet Technology, Parenterals, Emulsions). Grounded in verified pharmacopeial literature.</p>
+            <div class="ai-input-wrap">
+              <input id="aiQuery" type="text" placeholder="e.g. Noyes Whitney, BCS Class II, Tablet Capping..." autocomplete="off">
+              <button id="aiAskBtn" class="primary" type="button">Ask Agent</button>
+            </div>
+            <div class="chiprow" id="aiChips">
+              <button class="chip" data-topic="Noyes-Whitney Dissolution" type="button">Noyes-Whitney</button>
+              <button class="chip" data-topic="BCS Classification" type="button">BCS Classes</button>
+              <button class="chip" data-topic="Tablet Capping" type="button">Tablet Capping</button>
+              <button class="chip" data-topic="USP Dissolution Apparatus" type="button">USP Apparatus</button>
+              <button class="chip" data-topic="Bancroft Rule Emulsion" type="button">Emulsions</button>
+            </div>
+            <div id="aiOutput" class="ai-output" aria-live="polite"></div>
+          </section>
         </div>
 
         <aside class="card feedcard">
@@ -83,6 +124,7 @@
     <form method="dialog" id="bidForm">
       <h3 id="bidTitle"></h3>
       <p class="muted" id="bidInfo"></p>
+      <div id="bidAdviceBox" class="bid-advice-box" aria-live="polite"></div>
       <label>Your bid (points)
         <input id="bidAmount" type="number" inputmode="numeric" min="1" step="1" required>
       </label>
@@ -97,7 +139,19 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
   <script src="store.js"></script>
+  <script src="sync.js"></script>
+  <script src="rag.js"></script>
+  <script src="agents.js"></script>
+  <script src="sfx.js"></script>
   <script src="bidder.js"></script>
   <script src="particles.js"></script>
+  <script src="spotlight.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

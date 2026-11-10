@@ -49,7 +49,13 @@ function answerBody(lot, mode, a) {
 
 function questionCard(lot, mode) {
   const a = answerOf(lot);
-  return `<div class="qcard">${mediaHTML(lot)}<p class="qtext">${esc(lot.q)}</p>${answerBody(lot, mode, a)}
+  const ragExp = mode === "review"
+    ? `<div class="rag-explainer-bar">
+        <button class="ghost rag-btn" data-rag-explain="${lot.id}" type="button">Explain Concept with AI Agent (RAG)</button>
+        <div class="rag-exp-box" id="ragExpBox-${lot.id}" hidden></div>
+      </div>`
+    : "";
+  return `<div class="qcard">${mediaHTML(lot)}<p class="qtext">${esc(lot.q)}</p>${answerBody(lot, mode, a)}${ragExp}
     ${mode === "answer" ? '<div class="qfoot"><button class="cta" data-lock type="button">Lock in answer</button></div>' : ""}</div>`;
 }
 
@@ -210,7 +216,31 @@ function renderRules() {
     </div>`;
 }
 
-function render() { renderHero(); renderChart(); renderFeed(); renderWallet(); renderRules(); }
+let prevLeadingLots = new Set();
+function checkOutbidNotice() {
+  const n = me();
+  if (!n) return;
+  const curLeading = new Set(
+    state.lots
+      .filter((l) => phase(l) === "bidding" && topBid(l.id) && nk(topBid(l.id).name) === nk(n))
+      .map((l) => l.id)
+  );
+  prevLeadingLots.forEach((id) => {
+    if (!curLeading.has(id)) {
+      const lot = state.lots.find((l) => l.id === id);
+      if (lot && phase(lot) === "bidding") {
+        const top = topBid(lot.id);
+        if (top && nk(top.name) !== nk(n)) {
+          if (window.PMM_SFX) PMM_SFX.outbid();
+          toast(`Outbid on Q${lot.id} by ${top.name}! Raise to ${pts(minNext(lot))} pts`);
+        }
+      }
+    }
+  });
+  prevLeadingLots = curLeading;
+}
+
+function render() { checkOutbidNotice(); renderHero(); renderChart(); renderFeed(); renderWallet(); renderRules(); }
 
 /* ---------- bidding ---------- */
 function openBid(id) {
@@ -223,6 +253,14 @@ function openBid(id) {
   activeLot = lot;
   $("#bidTitle").textContent = lot.topic;
   $("#bidInfo").textContent = `Current bid ${pts(current(lot))} pts. Minimum next bid ${pts(minNext(lot))} pts. You can bid up to ${pts(free)} pts.`;
+
+  const adviceEl = $("#bidAdviceBox");
+  if (adviceEl && window.PMM_AGENTS) {
+    const adv = PMM_AGENTS.BidStrategistAgent.analyze(lot, me(), state);
+    adviceEl.className = "bid-advice-box tier-" + adv.tier;
+    adviceEl.innerHTML = `<span class="adv-badge">${esc(adv.recommendation)}</span><p>${esc(adv.advice)}</p>`;
+  }
+
   $("#bidAmount").value = minNext(lot);
   $("#bidErr").textContent = "";
   const amts = [...new Set([0, 1, 2, 4].map((k) => minNext(lot) + k * lot.inc).filter((a) => a <= free).concat(free))];
@@ -230,21 +268,29 @@ function openBid(id) {
   $("#bidDialog").showModal();
 }
 
+let isBidding = false;
 function placeBid() {
-  state = load(); // check against the latest data
-  const lot = state.lots.find((l) => l.id === activeLot.id);
-  if (!lot) { $("#bidErr").textContent = "This question was removed."; return; }
-  const amount = Math.floor(Number($("#bidAmount").value)), name = me(), top = topBid(lot.id);
-  if (!isLive(lot)) { $("#bidErr").textContent = "Bidding has closed for this question."; return; }
-  if (top && nk(top.name) === nk(name)) { $("#bidErr").textContent = "You are already leading this question."; return; }
-  if (!(amount >= minNext(lot))) { $("#bidErr").textContent = `Bid at least ${pts(minNext(lot))} points.`; return; }
-  if (amount > available(name, lot.id)) { $("#bidErr").textContent = `You only have ${pts(available(name, lot.id))} points free.`; return; }
-  state.bids.push({ lotId: lot.id, name, amount, at: Date.now() });
-  if (lot.endsAt - Date.now() < 30000) lot.endsAt += 30000; // last-second bids add 30 s
-  save(state);
-  $("#bidDialog").close();
-  render();
-  toast(`Bid placed: ${pts(amount)} pts`);
+  if (isBidding) return;
+  isBidding = true;
+  try {
+    state = load(); // check against the latest data
+    const lot = state.lots.find((l) => l.id === activeLot.id);
+    if (!lot) { $("#bidErr").textContent = "This question was removed."; return; }
+    const amount = Math.floor(Number($("#bidAmount").value)), name = me(), top = topBid(lot.id);
+    if (!isLive(lot)) { $("#bidErr").textContent = "Bidding has closed for this question."; return; }
+    if (top && nk(top.name) === nk(name)) { $("#bidErr").textContent = "You are already leading this question."; return; }
+    if (!(amount >= minNext(lot))) { $("#bidErr").textContent = `Bid at least ${pts(minNext(lot))} points.`; return; }
+    if (amount > available(name, lot.id)) { $("#bidErr").textContent = `You only have ${pts(available(name, lot.id))} points free.`; return; }
+    state.bids.push({ lotId: lot.id, name, amount, at: Date.now() });
+    if (lot.endsAt - Date.now() < 30000) lot.endsAt += 30000; // last-second bids add 30 s
+    if (!save(state)) { $("#bidErr").textContent = "Could not save. Storage may be full."; return; }
+    $("#bidDialog").close();
+    render();
+    if (window.PMM_SFX) PMM_SFX.bid();
+    toast(`Bid placed: ${pts(amount)} pts`);
+  } finally {
+    isBidding = false;
+  }
 }
 
 function lockAnswer() {
@@ -266,10 +312,15 @@ function lockAnswer() {
     choice = pick;
   }
   state.answers.push({ lotId: lot.id, name: top.name, choice, at: Date.now() });
-  save(state);
+  if (!save(state)) { toast("Could not save answer. Storage full."); return; }
+  const correct = isRight(lot, { choice });
+  if (window.PMM_SFX) {
+    if (correct) PMM_SFX.correct();
+    else PMM_SFX.wrong();
+  }
   pick = null;
   render();
-  toast("Answer locked in");
+  toast(correct ? "Answer locked in: Correct! Points awarded." : "Answer locked in: Incorrect. Points deducted.");
 }
 
 /* when the quiz master resets the event, every team page forgets its team name */
@@ -310,6 +361,7 @@ function registerTeam() {
 $("#hero").addEventListener("click", (e) => {
   const bid = e.target.closest("[data-bid]"), nav = e.target.closest("[data-nav]"), dot = e.target.closest("[data-sel]");
   const more = e.target.closest("[data-more]"), opt = e.target.closest("[data-opt]"), lock = e.target.closest("[data-lock]");
+  const ragExp = e.target.closest("[data-rag-explain]");
   if (bid) openBid(Number(bid.dataset.bid));
   if (dot) { sel = Number(dot.dataset.sel); pick = null; renderHero(); }
   if (nav) {
@@ -319,6 +371,30 @@ $("#hero").addEventListener("click", (e) => {
   if (more) { const box = more.closest(".about"); box.classList.toggle("open"); more.textContent = box.classList.contains("open") ? "Show less" : "Read more"; }
   if (opt) { pick = Number(opt.dataset.opt); renderHero(); }
   if (lock) lockAnswer();
+  if (ragExp) {
+    const lotId = Number(ragExp.dataset.ragExplain);
+    const box = $("#ragExpBox-" + lotId);
+    if (box) {
+      if (!box.hidden) {
+        box.hidden = true;
+        ragExp.textContent = "Explain Concept with AI Agent (RAG)";
+      } else {
+        const lot = state.lots.find((l) => l.id === lotId);
+        if (lot && window.PMM_AGENTS) {
+          const exp = PMM_AGENTS.PharmaTutorAgent.explainSettledLot(lot);
+          box.innerHTML = `<div class="rag-content">
+            <h4>${esc(exp.topic)} <small>(${esc(exp.unit)})</small></h4>
+            <p class="rag-principle">${esc(exp.corePrinciple)}</p>
+            ${exp.formula ? `<div class="rag-formula"><code>${esc(exp.formula)}</code></div>` : ""}
+            <p class="rag-takeaway"><b>💡 Key Invariant:</b> ${esc(exp.clinicalTakeaway)}</p>
+            <p class="rag-ref"><b>📖 Pharmacopeial Ref:</b> <i>${esc(exp.reference)}</i></p>
+          </div>`;
+          box.hidden = false;
+          ragExp.textContent = "Hide AI Explanation";
+        }
+      }
+    }
+  }
 });
 /* typed answers and matches are kept as they change, without redrawing the card */
 $("#hero").addEventListener("input", (e) => { if (e.target.matches("[data-text]")) pick = e.target.value; });
@@ -350,7 +426,6 @@ $("#wallet").addEventListener("input", (e) => { if (e.target.id === "myPts") e.t
 $("#search").addEventListener("input", () => { pick = null; renderHero(); });
 $("#quick").addEventListener("click", (e) => { const b = e.target.closest("[data-amt]"); if (b) $("#bidAmount").value = b.dataset.amt; });
 $("#bidForm").addEventListener("submit", (e) => { e.preventDefault(); placeBid(); });
-$("#bidGo").addEventListener("click", placeBid);
 const cancelBtn = $("#bidCancel");
 if (cancelBtn) cancelBtn.addEventListener("click", () => $("#bidDialog").close());
 $("#filters").addEventListener("click", (e) => {
@@ -372,6 +447,13 @@ $("#bidder").addEventListener("keydown", (e) => { if (e.key === "Enter") { regis
 $("#bidder").addEventListener("change", registerTeam);
 registerTeam();
 window.addEventListener("storage", (e) => { if (e.key === KEY) { state = load(); syncEpoch(); render(); } });
+if (typeof window !== "undefined" && window.PMM_SYNC) {
+  window.PMM_SYNC.subscribe(() => {
+    state = load();
+    syncEpoch();
+    render();
+  });
+}
 
 setInterval(() => {
   let ended = false;
@@ -382,5 +464,59 @@ setInterval(() => {
   });
   if (ended) render();
 }, 1000);
+
+/* ---------- AI Tutor Drawer & Sound Listeners ---------- */
+const aiToggleBtn = $("#aiToggleBtn");
+const aiTutorCard = $("#aiTutorCard");
+const aiCloseBtn = $("#aiCloseBtn");
+const aiAskBtn = $("#aiAskBtn");
+const aiQuery = $("#aiQuery");
+const aiOutput = $("#aiOutput");
+const aiChips = $("#aiChips");
+
+function askTutor(query) {
+  if (!query || !query.trim()) return;
+  if (!window.PMM_AGENTS) { toast("AI Agent initializing..."); return; }
+  if (aiTutorCard) aiTutorCard.hidden = false;
+  const reply = PMM_AGENTS.PharmaTutorAgent.answerQuery(query);
+  const formatted = reply
+    .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+    .replace(/\*(.*?)\*/g, "<i>$1</i>")
+    .replace(/`(.*?)`/g, "<code>$1</code>")
+    .replace(/\n\n/g, "<br><br>");
+  if (aiOutput) aiOutput.innerHTML = `<div class="ai-msg">${formatted}</div>`;
+}
+
+if (aiToggleBtn && aiTutorCard) {
+  aiToggleBtn.addEventListener("click", () => {
+    aiTutorCard.hidden = !aiTutorCard.hidden;
+    if (!aiTutorCard.hidden && aiQuery) aiQuery.focus();
+  });
+}
+if (aiCloseBtn && aiTutorCard) {
+  aiCloseBtn.addEventListener("click", () => { aiTutorCard.hidden = true; });
+}
+if (aiAskBtn && aiQuery) {
+  aiAskBtn.addEventListener("click", () => askTutor(aiQuery.value));
+}
+if (aiQuery) {
+  aiQuery.addEventListener("keydown", (e) => { if (e.key === "Enter") askTutor(aiQuery.value); });
+}
+if (aiChips) {
+  aiChips.addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-topic]");
+    if (chip && aiQuery) {
+      aiQuery.value = chip.dataset.topic;
+      askTutor(chip.dataset.topic);
+    }
+  });
+}
+
+const sfxToggleBtn = $("#sfxToggleBtn");
+if (sfxToggleBtn && window.PMM_SFX) {
+  const updateSfxText = () => { sfxToggleBtn.textContent = PMM_SFX.isEnabled() ? "Sound: On" : "Sound: Off"; };
+  updateSfxText();
+  sfxToggleBtn.addEventListener("click", () => { PMM_SFX.toggle(); updateSfxText(); });
+}
 
 render();

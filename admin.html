@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#05060a">
   <meta name="robots" content="noindex, nofollow">
   <title>PMM 3 – Quiz master</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
@@ -15,6 +17,9 @@
   <div class="app">
     <aside class="side">
       <h1 class="brand">PMM<span>3</span><small>Quiz master · Pharmaceutics Mastery Matrix 3</small></h1>
+      <div class="sync-wrap">
+        <span id="syncBadge" class="sync-badge offline" title="Multi-device synchronization status"><i></i><span class="sync-text">Local Mode</span></span>
+      </div>
       <nav class="menu" aria-label="Pages">
         <a class="on" href="admin.html" aria-current="page">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.3 6.8 19.1l1-5.8L3.5 9.2l5.9-.9L12 3z"/></svg>
@@ -29,6 +34,7 @@
           Score Board
         </a>
       </nav>
+      <button id="sfxBtn" class="ghost sfxbtn" type="button" aria-label="Toggle sound effects">Sound: On</button>
       <button id="lockBtn" class="ghost lockbtn" type="button" hidden>Lock</button>
     </aside>
 
@@ -69,6 +75,24 @@
           <h2>Reset event</h2>
           <p class="hint">Clears everything except your prepared questions: all live questions, bids, answers, the scoreboard, all team names and the points they entered. Teams must enter their team name and points again. The starting points setting is kept.</p>
           <button id="resetAll" class="ghost danger" type="button">Reset everything</button>
+        </section>
+
+        <section class="card ai-card">
+          <div class="charthead">
+            <h2>AI Authoring Agent &amp; Question Bank</h2>
+            <div class="bank-actions">
+              <button id="aiPackBtn" class="primary" type="button">Stage 5-Question Mastery Pack</button>
+              <button id="exportBankBtn" class="ghost" type="button">Export Bank (JSON)</button>
+              <label class="ghost filebtn">Import Bank
+                <input id="importBankFile" type="file" accept=".json" class="visually-hidden">
+              </label>
+            </div>
+          </div>
+          <p class="hint">The AI Authoring Agent leverages the integrated Pharmaceutics Mastery Matrix RAG database to generate high-yield, balanced questions across all 8 formats with single-click staging.</p>
+          <div class="ai-controls">
+            <button id="aiGenBtn" class="ghost ai-action-btn" type="button">Auto-populate current question type</button>
+            <span id="aiStatus" class="ai-status" role="status" aria-live="polite"></span>
+          </div>
         </section>
 
         <section class="card">
@@ -180,9 +204,47 @@
     </div>
   </div>
 
+  <dialog id="draftDialog">
+    <form method="dialog" id="draftForm">
+      <h3>Edit prepared question</h3>
+      <input type="hidden" id="editDraftId">
+      <label>Topic <input id="editTopic" type="text" maxlength="60" required></label>
+      <label>Subject line <input id="editSubject" type="text" maxlength="60"></label>
+      <label>Difficulty
+        <select id="editDiff"><option>Easy</option><option>Medium</option><option>Hard</option></select>
+      </label>
+      <label>Question text <textarea id="editText" maxlength="500" required></textarea></label>
+      <label>Hint (optional) <textarea id="editHint" maxlength="300"></textarea></label>
+      <div class="row">
+        <label>Start bid (pts) <input id="editStart" type="number" min="1" step="1" required></label>
+        <label>Min raise (pts) <input id="editInc" type="number" min="1" step="1" required></label>
+      </div>
+      <div class="row">
+        <label>Bidding (mins) <input id="editMins" type="number" min="0.5" step="0.5" required></label>
+        <label>Answer (secs) <input id="editSecs" type="number" min="10" required></label>
+      </div>
+      <div class="row">
+        <button id="draftCancel" value="cancel" class="ghost" type="button">Cancel</button>
+        <button id="draftSave" type="submit" class="primary">Save changes</button>
+      </div>
+    </form>
+  </dialog>
+
   <div id="toast" role="status" aria-live="polite"></div>
   <script src="store.js"></script>
+  <script src="sync.js"></script>
+  <script src="rag.js"></script>
+  <script src="agents.js"></script>
+  <script src="sfx.js"></script>
   <script src="admin.js"></script>
   <script src="particles.js"></script>
+  <script src="spotlight.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

@@ -163,6 +163,7 @@ function announce() {
     if (state.bids.length > lastBidCount) {
       const b = state.bids[state.bids.length - 1], l = L.find((x) => x.id === b.lotId);
       msg = ["bid", `${esc(b.name)} bids ${pts(b.amount)} pts`, l ? `Q${l.id} · ${esc(l.topic)}` : ""];
+      if (window.PMM_SFX) PMM_SFX.bid();
     }
     L.forEach((l) => {
       const p = phase(l), old = lastPhase.get(l.id), t = topBid(l.id), q = `Q${l.id} · ${esc(l.topic)}`;
@@ -170,10 +171,16 @@ function announce() {
       else if (old !== p) {
         const lost = ladderRows(l).length > 1 ? " Other teams lost the bid." : "";
         if (p === "answering") msg = ["win", `${esc(t.name)} won the bid`, `${pts(t.amount)} pts locked · answering now.${lost}`];
-        else if (p === "correct") msg = ["good", `${esc(t.name)} answered correctly!`, `+${pts(t.amount)} pts · ${q}`];
-        else if (p === "wrong") msg = ["bad", `${esc(t.name)} answered wrong`, `−${pts(t.amount)} pts · ${q}`];
-        else if (p === "timeout") msg = ["bad", `${esc(t.name)} ran out of time`, `−${pts(t.amount)} pts · ${q}`];
-        else if (p === "unsold") msg = ["bid", "No bids placed", q];
+        else if (p === "correct") {
+          msg = ["good", `${esc(t.name)} answered correctly!`, `+${pts(t.amount)} pts · ${q}`];
+          if (window.PMM_SFX) PMM_SFX.correct();
+        } else if (p === "wrong") {
+          msg = ["bad", `${esc(t.name)} answered wrong`, `−${pts(t.amount)} pts · ${q}`];
+          if (window.PMM_SFX) PMM_SFX.wrong();
+        } else if (p === "timeout") {
+          msg = ["bad", `${esc(t.name)} ran out of time`, `−${pts(t.amount)} pts · ${q}`];
+          if (window.PMM_SFX) PMM_SFX.wrong();
+        } else if (p === "unsold") msg = ["bid", "No bids placed", q];
       }
     });
   }
@@ -231,7 +238,20 @@ document.addEventListener("keydown", (e) => {
   else if (e.key.toLowerCase() === "f") fullscreen();
 });
 window.addEventListener("storage", (e) => { if (e.key === KEY) { state = load(); render(); } });
+if (typeof window !== "undefined" && window.PMM_SYNC) {
+  window.PMM_SYNC.subscribe(() => {
+    state = load();
+    render();
+  });
+}
 setInterval(() => { if (tick()) { state = load(); render(); } }, 250);
 setInterval(() => { state = load(); render(); }, 1000);
+
+const sfxBtnLive = $("#sfxBtnLive");
+if (sfxBtnLive && window.PMM_SFX) {
+  const updateSfxText = () => { sfxBtnLive.textContent = PMM_SFX.isEnabled() ? "Sound: On" : "Sound: Off"; };
+  updateSfxText();
+  sfxBtnLive.addEventListener("click", () => { PMM_SFX.toggle(); updateSfxText(); });
+}
 
 render();

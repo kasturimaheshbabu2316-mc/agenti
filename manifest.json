@@ -1,0 +1,18 @@
+{
+  "name": "Pharmaceutics Mastery Matrix 3 (PMM 3)",
+  "short_name": "PMM 3",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#05060a",
+  "theme_color": "#05060a",
+  "orientation": "any",
+  "description": "Zero-backend real-time academic quiz auction engine with RAG knowledge search and agent orchestration.",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

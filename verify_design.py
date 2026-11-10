@@ -99,7 +99,7 @@ for tok in required_tokens:
         print(f"[PASS] style.css: Contains design token/rule '{tok}'")
 
 # 3. Check JS files for forbidden inline styles in templates
-js_files = ["bidder.js", "admin.js", "live.js", "store.js", "particles.js"]
+js_files = ["bidder.js", "admin.js", "live.js", "store.js", "particles.js", "sync.js"]
 for jf in js_files:
     with open(jf, "r", encoding="utf-8") as file:
         content = file.read()

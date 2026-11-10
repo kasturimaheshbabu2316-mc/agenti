@@ -223,8 +223,8 @@ function clearForm() {
 }
 /* turns a prepared question into a live one; bidding runs from now */
 function toLot(d) {
-  const { mins, did, ...rest } = d;
-  return Object.assign({ id: state.nextId++ }, rest, { endsAt: Date.now() + mins * 60000 });
+  const { did, ...rest } = d;
+  return Object.assign({ id: state.nextId++, mins: d.mins }, rest, { endsAt: Date.now() + d.mins * 60000 });
 }
 
 function addQuestion() {
@@ -233,6 +233,7 @@ function addQuestion() {
   state.lots.push(toLot(d));
   if (!save(state)) { state.lots.pop(); state.nextId--; toast("Could not save. Browser storage may be full."); return; }
   clearForm(); renderRows(); toast("Question added. Bidding is open.");
+  if (window.PMM_SFX) PMM_SFX.bid();
 }
 
 /* ---------- prepared questions ---------- */
@@ -253,6 +254,7 @@ function renderDrafts() {
       <td>${correctHTML(d)}</td>
       <td class="acts">
         <button class="primary" data-release="${d.did}" type="button">Release</button>
+        <button class="ghost" data-edit-draft="${d.did}" type="button">Edit</button>
         <button class="ghost danger" data-del-draft="${d.did}" type="button">Delete</button>
       </td></tr>`;
   }).join("");
@@ -266,22 +268,185 @@ function saveDraft() {
   clearForm(); renderDrafts(); toast("Saved to prepared questions. Teams cannot see it yet.");
 }
 $("#draftRows").addEventListener("click", (e) => {
-  const rel = e.target.closest("[data-release]"), del = e.target.closest("[data-del-draft]");
-  if (!rel && !del) return;
+  const rel = e.target.closest("[data-release]"), del = e.target.closest("[data-del-draft]"), edt = e.target.closest("[data-edit-draft]");
+  if (!rel && !del && !edt) return;
   state = load(); state.drafts = state.drafts || [];
-  const id = Number((rel || del).dataset.release || (rel || del).dataset.delDraft), d = state.drafts.find((x) => x.did === id);
+  const id = Number((rel || del || edt).dataset.release || (rel || del || edt).dataset.delDraft || (rel || del || edt).dataset.editDraft);
+  const d = state.drafts.find((x) => x.did === id);
   if (!d) { renderDrafts(); return; }
+
+  if (edt) {
+    const dlg = $("#draftDialog");
+    if (!dlg) return;
+    $("#editDraftId").value = String(d.did);
+    $("#editTopic").value = d.topic || "";
+    $("#editSubject").value = d.subject || "";
+    $("#editDiff").value = d.difficulty || "Medium";
+    $("#editText").value = d.q || "";
+    $("#editHint").value = d.hint || "";
+    $("#editStart").value = String(d.start || 50);
+    $("#editInc").value = String(d.inc || 10);
+    $("#editMins").value = String(d.mins || 2);
+    $("#editSecs").value = String(d.answerSecs || 60);
+    dlg.showModal();
+    return;
+  }
+
   if (rel) {
     if (!confirm(`Release "${d.topic}" now? Bidding opens immediately for ${d.mins} minute(s).`)) return;
     state.drafts = state.drafts.filter((x) => x.did !== id);
     state.lots.push(toLot(d));
     if (!save(state)) { toast("Could not save. Browser storage may be full."); state = load(); return; }
     renderDrafts(); renderRows(); toast("Released. Bidding is open.");
+    if (window.PMM_SFX) PMM_SFX.bid();
   } else if (confirm(`Delete the prepared question "${d.topic}"? This cannot be undone.`)) {
     state.drafts = state.drafts.filter((x) => x.did !== id);
     save(state); renderDrafts(); toast("Prepared question deleted");
   }
 });
+
+/* draft edit dialog */
+const draftDialog = $("#draftDialog");
+const draftCancel = $("#draftCancel");
+if (draftCancel && draftDialog) {
+  draftCancel.addEventListener("click", () => draftDialog.close());
+}
+const draftForm = $("#draftForm");
+if (draftForm && draftDialog) {
+  draftForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    state = load(); state.drafts = state.drafts || [];
+    const id = Number($("#editDraftId").value);
+    const d = state.drafts.find((x) => x.did === id);
+    if (!d) { draftDialog.close(); renderDrafts(); return; }
+    d.topic = $("#editTopic").value.trim();
+    d.subject = $("#editSubject").value.trim();
+    d.difficulty = $("#editDiff").value;
+    d.q = $("#editText").value.trim();
+    d.hint = $("#editHint").value.trim();
+    d.start = Math.floor(Number($("#editStart").value)) || 50;
+    d.inc = Math.floor(Number($("#editInc").value)) || 10;
+    d.mins = Number($("#editMins").value) || 2;
+    d.answerSecs = Math.floor(Number($("#editSecs").value)) || 60;
+    save(state);
+    draftDialog.close();
+    renderDrafts();
+    toast("Prepared question updated");
+  });
+}
+
+/* ---------- AI Authoring Agent & Question Bank ---------- */
+const aiPackBtn = $("#aiPackBtn");
+if (aiPackBtn) {
+  aiPackBtn.addEventListener("click", () => {
+    state = load();
+    if (!window.PMM_AGENTS) { toast("AI Agents module initializing..."); return; }
+    const added = PMM_AGENTS.AuthoringAgent.generateDraftPack(state, { count: 5 });
+    if (!save(state)) { toast("Could not save. Browser storage may be full."); return; }
+    renderDrafts();
+    if (window.PMM_SFX) PMM_SFX.bid();
+    toast(`AI Agent generated and staged ${added} Mastery Matrix draft questions!`);
+  });
+}
+
+const aiGenBtn = $("#aiGenBtn");
+if (aiGenBtn) {
+  aiGenBtn.addEventListener("click", () => {
+    if (!window.PMM_AGENTS) { toast("AI Agents module initializing..."); return; }
+    const type = $("#qType").value;
+    const diff = $("#qDiff").value;
+    const lot = PMM_AGENTS.AuthoringAgent.generateQuestion({ type, difficulty: diff });
+    if (!lot) return;
+    $("#qTopic").value = lot.topic || "";
+    $("#qSubject").value = lot.subject || "";
+    $("#qHint").value = lot.hint || "";
+    $("#qDiff").value = lot.difficulty || "Medium";
+    $("#qText").value = lot.q || "";
+    if (lot.start) $("#qStart").value = lot.start;
+    if (lot.inc) $("#qInc").value = lot.inc;
+    if (lot.mins) $("#qMins").value = lot.mins;
+    if (lot.answerSecs) $("#qSecs").value = lot.answerSecs;
+
+    if (lot.mode === "mcq" && Array.isArray(lot.opts)) {
+      ["#qA", "#qB", "#qC", "#qD"].forEach((id, i) => { $(id).value = lot.opts[i] || ""; });
+      if (typeof lot.correct === "number") $("#qCorrect").value = String(lot.correct);
+    } else if (lot.mode === "text" && Array.isArray(lot.accept)) {
+      $("#qAccept").value = lot.accept.join(" | ");
+    } else if (lot.mode === "match" && Array.isArray(lot.pairs)) {
+      const rows = document.querySelectorAll("#box-match .pairrow");
+      rows.forEach((r, i) => {
+        const p = lot.pairs[i];
+        r.querySelector(".pl").value = p ? p.l : "";
+        r.querySelector(".pr").value = p ? p.r : "";
+      });
+    }
+    applyType();
+    if (window.PMM_SFX) PMM_SFX.bid();
+    toast(`Auto-populated ${typeName(lot)} template from Pharmaceutics RAG!`);
+  });
+}
+
+const exportBankBtn = $("#exportBankBtn");
+if (exportBankBtn) {
+  exportBankBtn.addEventListener("click", () => {
+    state = load();
+    const data = {
+      app: "Pharmaceutics Mastery Matrix 3",
+      exportedAt: new Date().toISOString(),
+      drafts: state.drafts || [],
+      lots: state.lots || []
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = u;
+    a.download = `pmm3_question_bank_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(u);
+    toast("Question bank exported as JSON");
+  });
+}
+
+const importBankFile = $("#importBankFile");
+if (importBankFile) {
+  importBankFile.addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        const incoming = parsed.drafts || parsed.lots || (Array.isArray(parsed) ? parsed : []);
+        if (!incoming.length) { toast("No questions found in JSON file"); return; }
+        state = load();
+        state.drafts = state.drafts || [];
+        state.nextDraft = state.nextDraft || 1;
+        let count = 0;
+        incoming.forEach((q) => {
+          const did = state.nextDraft++;
+          const draft = Object.assign({}, q, { did });
+          state.drafts.push(draft);
+          count++;
+        });
+        save(state);
+        renderDrafts();
+        toast(`Imported ${count} questions into Prepared Questions!`);
+      } catch (err) {
+        toast("Invalid JSON file format");
+      }
+    };
+    reader.readAsText(f);
+    e.target.value = "";
+  });
+}
+
+/* Sound button */
+const sfxBtn = $("#sfxBtn");
+if (sfxBtn && window.PMM_SFX) {
+  const updateSfxText = () => { sfxBtn.textContent = PMM_SFX.isEnabled() ? "Sound: On" : "Sound: Off"; };
+  updateSfxText();
+  sfxBtn.addEventListener("click", () => { PMM_SFX.toggle(); updateSfxText(); });
+}
 
 $("#qType").addEventListener("change", applyType);
 $("#qMode").addEventListener("change", applyType);
@@ -335,6 +500,16 @@ $("#rows").addEventListener("click", (e) => {
   }
 });
 window.addEventListener("storage", (e) => { if (e.key === KEY && !$("#panel").hidden) { state = load(); renderRows(); renderTeamsSafe(); renderDrafts(); } });
+if (typeof window !== "undefined" && window.PMM_SYNC) {
+  window.PMM_SYNC.subscribe(() => {
+    if (!$("#panel").hidden) {
+      state = load();
+      renderRows();
+      renderTeamsSafe();
+      renderDrafts();
+    }
+  });
+}
 setInterval(() => {
   if ($("#panel").hidden) return;
   let ended = false;
