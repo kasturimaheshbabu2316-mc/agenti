@@ -21,7 +21,8 @@ const ASSETS_TO_CACHE = [
   "./particles.js",
   "./spotlight.js",
   "./manifest.json",
-  "./icon.svg"
+  "./icon.svg",
+  "./apple-touch-icon.png"
 ];
 
 self.addEventListener("install", (event) => {
