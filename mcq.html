@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interactive MCQ Option Selection Component · PMM 3</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Standalone Embedded Styles for Dark-Mode Option Card Selection Component */
+    :root {
+      --mcq-bg: #08090d;
+      --mcq-cyan: #38bdf8;
+      --mcq-lav: #c4b5f5;
+      --mcq-emerald: #34d399;
+      --mcq-coral: #f43f5e;
+      --mcq-font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      --mcq-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+    }
+
+    body.mcq-layout {
+      background-color: var(--mcq-bg);
+      background-image:
+        radial-gradient(circle at 12% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 88% 85%, rgba(196, 181, 245, 0.06) 0%, transparent 45%);
+    }
+
+    .opts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .opts {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+      padding: 13px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      font-family: var(--mcq-font-sans);
+      font-size: 14.5px;
+      font-weight: 500;
+      color: #f8fafc;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .opt:focus-visible {
+      outline: 2px solid var(--mcq-lav);
+      outline-offset: 2px;
+    }
+
+    .opt span {
+      flex: 1;
+      min-width: 0;
+      font-family: var(--mcq-font-sans);
+      line-height: 1.45;
+      word-break: break-word;
+      color: inherit;
+    }
+
+    .opt b {
+      flex: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-family: var(--mcq-font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .opt:hover:not(:disabled):not(.right):not(.wrong):not(.wrongpick):not(.picked):not(.active),
+    .opt.state-hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(196, 181, 245, 0.35);
+      transform: translateX(4px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 20px rgba(0, 0, 0, 0.45);
+    }
+
+    .opt:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: scale(0.98);
+      transition-duration: 0.08s;
+    }
+
+    .opt:hover:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: translateX(4px) scale(0.98);
+      transition-duration: 0.08s;
+    }
+
+    .opt.picked,
+    .opt.active {
+      border-color: #c4b5f5;
+      background: rgba(196, 181, 245, 0.18);
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 20px rgba(196, 181, 245, 0.28);
+    }
+
+    .opt.picked b,
+    .opt.active b {
+      background: linear-gradient(135deg, #7ee7f8, #c4b5f5, #ffb38a);
+      color: #05060a;
+      font-weight: 800;
+    }
+
+    .opt.picked:hover:not(:disabled):not(.right):not(.wrong):not(.wrongpick),
+    .opt.active:hover:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: translateX(4px);
+      border-color: #c4b5f5;
+      background: rgba(196, 181, 245, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 24px rgba(196, 181, 245, 0.38);
+    }
+
+    .opt.picked:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick),
+    .opt.active:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: scale(0.98);
+    }
+
+    .opt.picked:hover:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick),
+    .opt.active:hover:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: translateX(4px) scale(0.98);
+    }
+
+    .opt.right,
+    .opt.right:hover,
+    .opt.right:disabled {
+      border-color: #34d399;
+      background: rgba(52, 211, 153, 0.18);
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 20px rgba(52, 211, 153, 0.3);
+      cursor: default;
+      transform: none;
+    }
+
+    .opt.right b {
+      background: #34d399;
+      color: #05060a;
+      font-weight: 800;
+    }
+
+    .opt.wrong,
+    .opt.wrongpick,
+    .opt.wrong:hover,
+    .opt.wrong:disabled,
+    .opt.wrongpick:hover,
+    .opt.wrongpick:disabled {
+      border-color: #f43f5e;
+      background: rgba(244, 63, 94, 0.16);
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 20px rgba(244, 63, 94, 0.3);
+      cursor: default;
+      transform: none;
+    }
+
+    .opt.wrong b,
+    .opt.wrongpick b {
+      background: #f43f5e;
+      color: #05060a;
+      font-weight: 800;
+    }
+
+    .opt:disabled,
+    .opt[aria-disabled="true"] {
+      cursor: default;
+      transform: none;
+    }
+  </style>
+</head>
+<body class="mcq-layout">
+  <div class="mcq-container">
+    <header class="mcq-nav" aria-label="Main navigation">
+      <div class="mcq-nav-brand">
+        <a href="index.html" class="brand">PMM<span>3</span></a>
+        <span>MCQ Component Showcase</span>
+      </div>
+      <nav class="mcq-nav-links" aria-label="Platform views">
+        <a href="hub.html" title="All-In-One Unified Hub">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
+          All-In-One Hub
+        </a>
+        <a href="index.html">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Participant Matrix
+        </a>
+        <a href="live.html" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          Score Board
+        </a>
+        <a href="admin.html">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.3 6.8 19.1l1-5.8L3.5 9.2l5.9-.9L12 3z"/></svg>
+          Quiz Master
+        </a>
+        <button id="sfxToggle" class="ghost" type="button" aria-label="Toggle sound effects">Sound: On</button>
+      </nav>
+    </header>
+
+    <main class="mcq-interactive-panel">
+      <!-- Section 1: Live Interactive Component Sandbox -->
+      <section class="mcq-card" aria-labelledby="sandboxTitle">
+        <div class="mcq-card-header">
+          <div class="mcq-meta">
+            <span id="topicPill" class="mcq-pill">Noyes-Whitney Dissolution</span>
+            <span id="unitPill" class="mcq-pill unit">Physical Pharmaceutics · Unit I</span>
+            <span id="diffPill" class="mcq-pill">Medium</span>
+          </div>
+          <h1 id="sandboxTitle" class="mcq-card-title">Interactive Option Selection Sandbox</h1>
+          <p id="qPrompt" class="qtext">Under sink conditions, which formulation modification maximizes the solid drug dissolution rate according to the Noyes-Whitney equation (dM/dt = D·A/h · Cs)?</p>
+        </div>
+
+        <div id="interactiveOpts" class="opts" role="radiogroup" aria-label="Multiple choice options">
+          <button class="opt" type="button" data-index="0" role="radio" aria-checked="false">
+            <b>A</b>
+            <span>Biowaiver extension for BCS Class IV molecules</span>
+          </button>
+          <button class="opt" type="button" data-index="1" role="radio" aria-checked="false">
+            <b>B</b>
+            <span>Rapid disintegration into coarse primary granules</span>
+          </button>
+          <button class="opt" type="button" data-index="2" role="radio" aria-checked="false">
+            <b>C</b>
+            <span>Micronization maximizing interfacial effective surface area A</span>
+          </button>
+          <button class="opt" type="button" data-index="3" role="radio" aria-checked="false">
+            <b>D</b>
+            <span>Elevating the stagnant boundary layer hydrodynamic thickness h</span>
+          </button>
+        </div>
+
+        <div id="evalFeedback" class="mcq-feedback" role="status" aria-live="polite"></div>
+
+        <div class="mcq-controls">
+          <div class="mcq-btn-group">
+            <button id="evalBtn" class="primary" type="button">Evaluate Answer</button>
+            <button id="resetBtn" class="ghost" type="button">Reset</button>
+            <button id="nextQBtn" class="ghost" type="button">Cycle Question Bank</button>
+          </div>
+          <div class="mcq-btn-group">
+            <button id="ragExplainBtn" class="ghost" type="button">Explain with AI RAG Mentor</button>
+          </div>
+        </div>
+
+        <div id="ragExplainBox" class="rag-exp-box" hidden></div>
+      </section>
+
+      <!-- Section 2: Complete Interactive States Gallery -->
+      <section class="mcq-card" aria-labelledby="galleryTitle">
+        <div class="mcq-card-header">
+          <h2 id="galleryTitle" class="mcq-card-title">Component Specification &amp; States Gallery</h2>
+          <p class="mcq-card-desc">Visual verification of all 5 required interactive and evaluation states for the OLED dark-mode matrix.</p>
+        </div>
+
+        <div class="mcq-gallery">
+          <div class="mcq-gallery-item">
+            <div class="mcq-gallery-label">
+              <span>State 1</span> Resting State
+            </div>
+            <button class="opt" type="button" tabindex="-1">
+              <b>A</b>
+              <span>Translucent frosted glass, 1px border, 16px radius</span>
+            </button>
+          </div>
+
+          <div class="mcq-gallery-item">
+            <div class="mcq-gallery-label">
+              <span>State 2</span> Hover State (Tactile)
+            </div>
+            <button class="opt state-hover" type="button">
+              <b>B</b>
+              <span>Hover: translateX(4px) + soft lavender rim (#c4b5f5)</span>
+            </button>
+          </div>
+
+          <div class="mcq-gallery-item">
+            <div class="mcq-gallery-label">
+              <span>State 3</span> Selected (.picked)
+            </div>
+            <button class="opt picked" type="button">
+              <b>C</b>
+              <span>Glowing lavender halo + cyber gradient badge</span>
+            </button>
+          </div>
+
+          <div class="mcq-gallery-item">
+            <div class="mcq-gallery-label">
+              <span>State 4</span> Correct Evaluation (.right)
+            </div>
+            <button class="opt right" type="button" aria-disabled="true">
+              <b>C</b>
+              <span>Glowing emerald green border &amp; badge halo</span>
+            </button>
+          </div>
+
+          <div class="mcq-gallery-item">
+            <div class="mcq-gallery-label">
+              <span>State 5</span> Wrong Choice (.wrong)
+            </div>
+            <button class="opt wrong wrongpick" type="button" aria-disabled="true">
+              <b>D</b>
+              <span>Glowing coral ruby red border &amp; badge halo</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="rag.js"></script>
+  <script src="agents.js"></script>
+  <script src="sfx.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      /* Questions Catalog for Live MCQ Demonstration */
+      const DEMO_QUESTIONS = [
+        {
+          topic: "Noyes-Whitney Dissolution",
+          unit: "Physical Pharmaceutics · Unit I",
+          diff: "Medium",
+          q: "Under sink conditions, which formulation modification maximizes the solid drug dissolution rate according to the Noyes-Whitney equation (dM/dt = D·A/h · Cs)?",
+          opts: [
+            "Biowaiver extension for BCS Class IV molecules",
+            "Rapid disintegration into coarse primary granules",
+            "Micronization maximizing interfacial effective surface area A",
+            "Elevating the stagnant boundary layer hydrodynamic thickness h"
+          ],
+          correct: 2,
+          ragTopic: "Noyes-Whitney Dissolution Kinetics"
+        },
+        {
+          topic: "BCS Classification Criteria",
+          unit: "Biopharmaceutics & Pharmacokinetics · Unit II",
+          diff: "Hard",
+          q: "According to the FDA Biopharmaceutics Classification System (BCS), which condition defines a drug as 'Highly Soluble'?",
+          opts: [
+            "Highest dose dissolves in <= 250 mL water across pH 1.0 to 6.8 at 37 °C",
+            "Aqueous solubility exceeds 10 mg/mL at neutral pH 7.0 only",
+            "Dissolves completely within 5 minutes in simulated gastric fluid (pH 1.2)",
+            "Systemic fraction absorbed (Fa) reaches 85% or greater in humans"
+          ],
+          correct: 0,
+          ragTopic: "Biopharmaceutics Classification System (BCS Classes I–IV)"
+        },
+        {
+          topic: "Tablet Capping & Decompression",
+          unit: "Tablet Technology · Unit III",
+          diff: "Medium",
+          q: "Which formulation or processing defect is the primary mechanistic cause of tablet capping during high-speed compression?",
+          opts: [
+            "Excessive lubricant concentration exceeding 2% magnesium stearate",
+            "Air entrapment within the die cavity and excessive fine granules (<100 mesh)",
+            "Inadequate binder hydration resulting in weak inter-particle bridges",
+            "Granule moisture content exceeding 5% loss on drying"
+          ],
+          correct: 1,
+          ragTopic: "Tablet Manufacturing Defects & Remediation"
+        },
+        {
+          topic: "USP Dissolution Apparatus",
+          unit: "Compendial Standards · Unit IV",
+          diff: "Medium",
+          q: "USP General Chapter <711> specifies which apparatus as standard for floating dosage forms, suppositories, and capsules?",
+          opts: [
+            "Apparatus 2 (Paddle at 50/75 rpm with sinkers)",
+            "Apparatus 4 (Flow-Through Cell with laminar flow)",
+            "Apparatus 1 (Rotating Basket at 100 rpm)",
+            "Apparatus 3 (Reciprocating Cylinder with dipping rate)"
+          ],
+          correct: 2,
+          ragTopic: "USP <711> Dissolution Testing Standards"
+        }
+      ];
+
+      let qIndex = 0;
+      let selectedIndex = null;
+      let evaluated = false;
+
+      const optsContainer = document.getElementById("interactiveOpts");
+      const evalBtn = document.getElementById("evalBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const nextQBtn = document.getElementById("nextQBtn");
+      const ragBtn = document.getElementById("ragExplainBtn");
+      const ragBox = document.getElementById("ragExplainBox");
+      const feedback = document.getElementById("evalFeedback");
+      const sfxBtn = document.getElementById("sfxToggle");
+
+      const LETTERS = ["A", "B", "C", "D"];
+
+      function renderQuestion() {
+        const cur = DEMO_QUESTIONS[qIndex];
+        document.getElementById("topicPill").textContent = cur.topic;
+        document.getElementById("unitPill").textContent = cur.unit;
+        document.getElementById("diffPill").textContent = cur.diff;
+        document.getElementById("qPrompt").textContent = cur.q;
+
+        selectedIndex = null;
+        evaluated = false;
+        optsContainer.classList.remove("evaluated");
+        feedback.className = "mcq-feedback";
+        feedback.textContent = "";
+        ragBox.hidden = true;
+        ragBox.innerHTML = "";
+        ragBtn.textContent = "Explain with AI RAG Mentor";
+
+        optsContainer.innerHTML = cur.opts.map((text, i) => {
+          return '<button class="opt" type="button" data-index="' + i + '" role="radio" aria-checked="false" aria-label="Option ' + LETTERS[i] + ': ' + text + '">' +
+            '<b>' + LETTERS[i] + '</b>' +
+            '<span>' + text + '</span>' +
+            '</button>';
+        }).join("");
+
+        wireOptionClicks();
+      }
+
+      function selectOptionByIndex(idx) {
+        if (evaluated) return;
+        const cur = DEMO_QUESTIONS[qIndex];
+        if (idx < 0 || idx >= cur.opts.length) return;
+        selectedIndex = idx;
+
+        if (window.PMM_SFX && PMM_SFX.select) {
+          PMM_SFX.select();
+        }
+
+        const buttons = optsContainer.querySelectorAll(".opt");
+        buttons.forEach((b, i) => {
+          const isSelected = i === idx;
+          b.classList.toggle("picked", isSelected);
+          b.classList.toggle("active", isSelected);
+          b.setAttribute("aria-checked", isSelected ? "true" : "false");
+          if (isSelected) b.focus();
+        });
+
+        feedback.className = "mcq-feedback";
+        feedback.textContent = "";
+      }
+
+      function wireOptionClicks() {
+        const buttons = optsContainer.querySelectorAll(".opt");
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (evaluated) return;
+            const idx = Number(btn.getAttribute("data-index"));
+            selectOptionByIndex(idx);
+          });
+
+          btn.addEventListener("keydown", (e) => {
+            if (evaluated) return;
+            const idx = Number(btn.getAttribute("data-index"));
+            const total = buttons.length;
+            if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+              e.preventDefault();
+              selectOptionByIndex((idx + 1) % total);
+            } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+              e.preventDefault();
+              selectOptionByIndex((idx - 1 + total) % total);
+            }
+          });
+        });
+      }
+
+      evalBtn.addEventListener("click", () => {
+        if (selectedIndex === null) {
+          feedback.className = "mcq-feedback wrong visible";
+          feedback.textContent = "Please select an option (A, B, C, or D) before evaluating.";
+          return;
+        }
+
+        const cur = DEMO_QUESTIONS[qIndex];
+        evaluated = true;
+        optsContainer.classList.add("evaluated");
+        const buttons = optsContainer.querySelectorAll(".opt");
+
+        buttons.forEach((b, i) => {
+          b.classList.remove("picked", "active");
+          if (i === cur.correct) {
+            b.classList.add("right");
+            b.setAttribute("aria-label", "Option " + LETTERS[i] + ": " + cur.opts[i] + " (Correct answer)");
+          } else if (i === selectedIndex) {
+            b.classList.add("wrong", "wrongpick");
+            b.setAttribute("aria-label", "Option " + LETTERS[i] + ": " + cur.opts[i] + " (Your selection, incorrect)");
+          } else {
+            b.classList.add("dimmed");
+            b.setAttribute("aria-disabled", "true");
+          }
+        });
+
+        if (selectedIndex === cur.correct) {
+          feedback.className = "mcq-feedback correct visible";
+          feedback.textContent = "Excellent! Option " + LETTERS[selectedIndex] + " is correct. Verified against standard pharmacopeial literature.";
+          if (window.PMM_SFX && PMM_SFX.correct) PMM_SFX.correct();
+        } else {
+          feedback.className = "mcq-feedback wrong visible";
+          feedback.textContent = "Option " + LETTERS[selectedIndex] + " is incorrect. The correct answer is Option " + LETTERS[cur.correct] + ".";
+          if (window.PMM_SFX && PMM_SFX.wrong) PMM_SFX.wrong();
+        }
+      });
+
+      resetBtn.addEventListener("click", () => {
+        selectedIndex = null;
+        evaluated = false;
+        optsContainer.classList.remove("evaluated");
+        feedback.className = "mcq-feedback";
+        feedback.textContent = "";
+        ragBox.hidden = true;
+        ragBox.innerHTML = "";
+        ragBtn.textContent = "Explain with AI RAG Mentor";
+
+        const cur = DEMO_QUESTIONS[qIndex];
+        const buttons = optsContainer.querySelectorAll(".opt");
+        buttons.forEach((b, i) => {
+          b.classList.remove("picked", "active", "right", "wrong", "wrongpick", "dimmed");
+          b.setAttribute("aria-checked", "false");
+          b.removeAttribute("aria-disabled");
+          b.setAttribute("aria-label", "Option " + LETTERS[i] + ": " + cur.opts[i]);
+        });
+      });
+
+      nextQBtn.addEventListener("click", () => {
+        qIndex = (qIndex + 1) % DEMO_QUESTIONS.length;
+        renderQuestion();
+      });
+
+      ragBtn.addEventListener("click", () => {
+        if (!ragBox.hidden) {
+          ragBox.hidden = true;
+          ragBtn.textContent = "Explain with AI RAG Mentor";
+          return;
+        }
+
+        const cur = DEMO_QUESTIONS[qIndex];
+        if (window.PMM_RAG) {
+          const res = PMM_RAG.search(cur.ragTopic || cur.topic, 1);
+          if (res && res.length) {
+            const exp = res[0];
+            ragBox.innerHTML = '<div class="rag-content">' +
+              '<h4>' + exp.topic + ' <small>(' + exp.unit + ')</small></h4>' +
+              '<p class="rag-principle">' + exp.content + '</p>' +
+              (exp.formula ? '<div class="rag-formula"><code>' + exp.formula + '</code></div>' : '') +
+              '<p class="rag-takeaway"><b>💡 Clinical Takeaway:</b> ' + exp.clinicalTakeaway + '</p>' +
+              '<p class="rag-ref"><b>📖 Pharmacopeial Reference:</b> <i>' + exp.reference + '</i></p>' +
+              '</div>';
+            ragBox.hidden = false;
+            ragBtn.textContent = "Hide AI Explanation";
+          }
+        }
+      });
+
+      if (sfxBtn && window.PMM_SFX) {
+        sfxBtn.textContent = "Sound: " + (PMM_SFX.isEnabled() ? "On" : "Off");
+        sfxBtn.addEventListener("click", () => {
+          const on = PMM_SFX.toggle();
+          sfxBtn.textContent = "Sound: " + (on ? "On" : "Off");
+        });
+      }
+
+      // Initial render
+      renderQuestion();
+    })();
+  </script>
+</body>
+</html>

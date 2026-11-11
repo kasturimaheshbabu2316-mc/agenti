@@ -4,7 +4,7 @@ from html.parser import HTMLParser
 
 print("=== Starting Comprehensive Design & Code Verification ===")
 
-html_files = ["index.html", "admin.html", "live.html"]
+html_files = ["index.html", "admin.html", "live.html", "mcq.html", "option-card.html", "hub.html"]
 all_passed = True
 
 # 1. HTML Validation

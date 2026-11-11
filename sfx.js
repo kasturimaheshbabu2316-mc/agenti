@@ -7,7 +7,12 @@
   "use strict";
 
   let audioCtx = null;
-  let soundEnabled = localStorage.getItem("pmm3-sound") !== "0"; // enabled by default
+  let soundEnabled = true; // enabled by default
+  try {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("pmm3-sound") === "0") {
+      soundEnabled = false;
+    }
+  } catch (_) {}
 
   function getAudioContext() {
     if (!audioCtx) {
@@ -51,7 +56,11 @@
     isEnabled: () => soundEnabled,
     toggle: () => {
       soundEnabled = !soundEnabled;
-      localStorage.setItem("pmm3-sound", soundEnabled ? "1" : "0");
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("pmm3-sound", soundEnabled ? "1" : "0");
+        }
+      } catch (_) {}
       if (soundEnabled) {
         SFX.bid();
       }
@@ -87,6 +96,11 @@
     /* Countdown Warning: Gentle clock pulse */
     tick: () => {
       playTone(800, "sine", 0.04, 0.06, 0);
+    },
+
+    /* Option Selection: Crisp subtle haptic click */
+    select: () => {
+      playTone(659.25, "sine", 0.05, 0.09, 0);
     }
   };
 

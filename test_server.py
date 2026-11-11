@@ -155,3 +155,30 @@ def test_websocket_handshake_and_sync():
             assert msg2["type"] == "SYNC"
             assert msg2["clientId"] == "test_client_1"
             assert msg2["state"]["epoch"] == 99999
+
+def test_mcq_showcase_page_served():
+    res = client.get("/mcq.html")
+    assert res.status_code == 200
+    assert "<button class=\"opt\"" in res.text
+    assert "MCQ Component Showcase" in res.text
+    assert "role=\"radiogroup\"" in res.text
+
+def test_option_card_standalone_page_served():
+    res = client.get("/option-card.html")
+    assert res.status_code == 200
+    assert "<button class=\"opt\"" in res.text
+    assert "role=\"radiogroup\"" in res.text
+    assert "linear-gradient(135deg, #7ee7f8, #c4b5f5, #ffb38a)" in res.text
+    assert "Option Card Selection" in res.text
+
+def test_hub_page_served():
+    res = client.get("/hub")
+    assert res.status_code == 200
+    assert "All-In-One Hub" in res.text
+    assert "Team Page" in res.text
+    assert "Quiz Master" in res.text
+    assert "Dual View" in res.text
+
+    res_all = client.get("/all")
+    assert res_all.status_code == 200
+    assert "All-In-One Hub" in res_all.text

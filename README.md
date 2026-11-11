@@ -6,6 +6,8 @@ High-performance, multi-view real-time quiz auction engine and AI-augmented asse
 - **Team Bidding Terminal (`index.html`)**: Interactive bidding, spendable wallet tracking, pre-briefing metadata secrecy, winner-exclusive answering portal, live activity feed, leaderboard, and embedded **Pharma AI Study Tutor (RAG)**.
 - **Quiz Master Management (`admin.html`)**: Passcode security gate (`MrKrsna`), question authoring across 8 formats, team ledger management, draft staging, draft editing/preview, 1-click **AI Question Pack Generation**, and JSON question bank import/export.
 - **Projector & Hall Display (`live.html`)**: High-visibility hall display, live visual bid ladder, leader highlights, synchronized countdown timers, audio chimes, and full post-settlement solution reveals.
+- **Interactive MCQ Option Showcase (`mcq.html`)**: Live component demonstration of the high-fidelity dark-mode option selection card with evaluation states, keyboard navigation, and audio feedback.
+- **Standalone Option Card Component (`option-card.html`)**: Zero-dependency, portable single-file reference implementation of the glassmorphic option selection card for external projects.
 - **RAG Knowledge Engine (`rag.js`)**: Embedded BM25 retrieval engine with 15 vetted domain knowledge chunks covering Physical Pharmacy, Biopharmaceutics, Pharmacokinetics, Tableting defects, USP dissolution apparatus, and Disperse systems.
 - **Multi-Agent AI System (`agents.js`)**:
   - `AuthoringAgent`: Validates question schemas and auto-generates balanced question packs for Quiz Masters.
@@ -34,7 +36,10 @@ node test_rag_agents.js
 # 5. Real-time WebSocket sync engine tests
 node test_sync_engine.js
 
-# 6. Production FastAPI server, WebSocket, and REST endpoint tests
+# 6. Interactive MCQ option selection component tests
+node test_mcq_component.js
+
+# 7. Production FastAPI server, WebSocket, and REST endpoint tests
 python -m pytest test_server.py
 ```
 

@@ -480,6 +480,11 @@ def serve_admin():
 def serve_live():
     return FileResponse(os.path.join(APP_DIR, "live.html"))
 
+@app.get("/hub")
+@app.get("/all")
+def serve_hub():
+    return FileResponse(os.path.join(APP_DIR, "hub.html"))
+
 # Mount remaining static assets
 app.mount("/", StaticFiles(directory=APP_DIR), name="static")
 

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Option Card Selection Component · Ultra-Modern Dark Mode</title>
+  <style>
+    /* ==========================================================================
+       Dark-Mode Option Card Selection Component
+       Palette: Deep Luxury Background (#08090d), Translucent Glass, Neon Accents
+       ========================================================================== */
+    :root {
+      --bg: #08090d;
+      --bg-card: rgba(14, 18, 30, 0.72);
+      --glass-fill: rgba(255, 255, 255, 0.04);
+      --glass-fill-hover: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --specular: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      --cyan: #38bdf8;
+      --lavender: #c4b5f5;
+      --emerald: #34d399;
+      --coral: #f43f5e;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Plus Jakarta Sans", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+      --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
+      --trans-card: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.08) 0%, transparent 42%),
+        radial-gradient(circle at 82% 88%, rgba(196, 181, 245, 0.06) 0%, transparent 48%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.015) 0%, transparent 100%);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.5;
+      padding: 32px 20px 60px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Container Glass Card */
+    .panel {
+      position: relative;
+      background: var(--bg-card);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow:
+        var(--specular),
+        0 24px 48px -12px rgba(0, 0, 0, 0.65);
+    }
+
+    .panel-header {
+      margin-bottom: 24px;
+    }
+
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--lavender);
+    }
+
+    .pill.cyan {
+      color: var(--cyan);
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+
+    .panel-title {
+      font-size: clamp(20px, 2.5vw, 24px);
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .prompt-text {
+      font-size: 15.5px;
+      color: #cbd5e1;
+      line-height: 1.55;
+    }
+
+    /* ==========================================================================
+       2. Component Layout & Responsive Grid
+       - 2-column grid on desktop/tablet
+       - Collapsing to 1-column on mobile (<640px)
+       ========================================================================== */
+    .opts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .opts {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .panel {
+        padding: 20px 16px;
+      }
+    }
+
+    /* ==========================================================================
+       3. Option Card Structure & Interactive States
+       ========================================================================== */
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+      padding: 14px 18px;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-fill);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      box-shadow:
+        var(--specular),
+        0 4px 16px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      font-family: var(--font-sans);
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--text);
+      transition: var(--trans-card);
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .opt:focus-visible {
+      outline: 2px solid var(--lavender);
+      outline-offset: 3px;
+    }
+
+    /* Left 32x32px Badge */
+    .opt b {
+      flex: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 700;
+      line-height: 1;
+      -webkit-user-select: none;
+      user-select: none;
+      transition: var(--trans-card);
+    }
+
+    /* Right Text Label */
+    .opt span {
+      flex: 1;
+      min-width: 0;
+      font-family: var(--font-sans);
+      line-height: 1.45;
+      word-break: break-word;
+      color: inherit;
+    }
+
+    /* Hover Micro-Interaction */
+    .opt:hover:not(:disabled):not(.right):not(.wrong):not(.wrongpick):not(.picked):not(.active),
+    .opt.state-hover {
+      transform: translateX(4px);
+      border-color: rgba(196, 181, 245, 0.35);
+      background: var(--glass-fill-hover);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 8px 24px -2px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Active Tap/Press Feedback (with smooth hover preservation) */
+    .opt:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: scale(0.98);
+      transition-duration: 0.08s;
+    }
+
+    .opt:hover:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: translateX(4px) scale(0.98);
+      transition-duration: 0.08s;
+    }
+
+    /* Selected State (.picked / .active) */
+    .opt.picked,
+    .opt.active {
+      border-color: var(--lavender);
+      background: rgba(196, 181, 245, 0.18);
+      color: #ffffff;
+      box-shadow:
+        var(--specular),
+        0 0 20px rgba(196, 181, 245, 0.28);
+    }
+
+    .opt.picked b,
+    .opt.active b {
+      background: linear-gradient(135deg, #7ee7f8, #c4b5f5, #ffb38a);
+      color: #05060a;
+      font-weight: 800;
+    }
+
+    .opt.picked:hover:not(:disabled):not(.right):not(.wrong):not(.wrongpick),
+    .opt.active:hover:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: translateX(4px);
+      border-color: var(--lavender);
+      background: rgba(196, 181, 245, 0.22);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        0 0 24px rgba(196, 181, 245, 0.38);
+    }
+
+    .opt.picked:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick),
+    .opt.active:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: scale(0.98);
+    }
+
+    .opt.picked:hover:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick),
+    .opt.active:hover:active:not(:disabled):not(.right):not(.wrong):not(.wrongpick) {
+      transform: translateX(4px) scale(0.98);
+    }
+
+    /* Correct Evaluation State (.right) */
+    .opt.right,
+    .opt.right:hover,
+    .opt.right:disabled {
+      border-color: var(--emerald);
+      background: rgba(52, 211, 153, 0.18);
+      color: #ffffff;
+      box-shadow:
+        var(--specular),
+        0 0 20px rgba(52, 211, 153, 0.3);
+      cursor: default;
+      transform: none;
+    }
+
+    .opt.right b {
+      background: var(--emerald);
+      color: #05060a;
+      font-weight: 800;
+    }
+
+    /* Wrong Evaluation State (.wrong) */
+    .opt.wrong,
+    .opt.wrongpick,
+    .opt.wrong:hover,
+    .opt.wrong:disabled,
+    .opt.wrongpick:hover,
+    .opt.wrongpick:disabled {
+      border-color: var(--coral);
+      background: rgba(244, 63, 94, 0.16);
+      color: #ffffff;
+      box-shadow:
+        var(--specular),
+        0 0 20px rgba(244, 63, 94, 0.3);
+      cursor: default;
+      transform: none;
+    }
+
+    .opt.wrong b,
+    .opt.wrongpick b {
+      background: var(--coral);
+      color: #05060a;
+      font-weight: 800;
+    }
+
+    .opt:disabled,
+    .opt[aria-disabled="true"] {
+      cursor: default;
+      transform: none;
+    }
+
+    .opt.dimmed {
+      opacity: 0.55;
+    }
+
+    /* ==========================================================================
+       Interactive Controls & Feedback Banner
+       ========================================================================== */
+    .feedback-banner {
+      margin-top: 18px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback-banner.visible {
+      display: block;
+    }
+
+    .feedback-banner.correct {
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      color: #a7f3d0;
+    }
+
+    .feedback-banner.wrong {
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fecdd3;
+    }
+
+    .controls-bar {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: all 0.18s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, rgba(196, 181, 245, 0.9), rgba(56, 189, 248, 0.85));
+      color: #05060a;
+      border: none;
+      box-shadow: 0 4px 16px rgba(196, 181, 245, 0.3);
+    }
+
+    .action-btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(196, 181, 245, 0.45);
+    }
+
+    .action-btn.ghost {
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      border: 1px solid var(--glass-border);
+    }
+
+    .action-btn.ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* ==========================================================================
+       Gallery: Showcase of All 5 States
+       ========================================================================== */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .gallery-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 18px;
+      background: rgba(10, 14, 26, 0.65);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+    }
+
+    .gallery-caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .gallery-caption span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--lavender);
+      text-transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .opt, .opt b, .action-btn {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- Interactive Option Card Selection Component Panel -->
+    <main class="panel" aria-labelledby="mainTitle">
+      <div class="panel-header">
+        <div class="badge-bar">
+          <span class="pill cyan">Biopharmaceutics</span>
+          <span class="pill">Single Choice Selection</span>
+        </div>
+        <h1 id="mainTitle" class="panel-title">Interactive Option Card Selection</h1>
+        <p id="questionPrompt" class="prompt-text">
+          Under sink conditions, which formulation modification maximizes the solid drug dissolution rate according to the Noyes-Whitney equation (dM/dt = D·A/h · Cs)?
+        </p>
+      </div>
+
+      <!-- Option Card Component Grid -->
+      <!-- html-validate-disable prefer-native-element -->
+      <!-- [html-validate-disable-block prefer-native-element] -->
+      <div id="optionCardGrid" class="opts" role="radiogroup" aria-label="Multiple choice options">
+        <button class="opt" type="button" data-index="0" role="radio" aria-checked="false" tabindex="0" aria-label="Option A: Biowaiver extension for BCS Class IV molecules">
+          <b>A</b>
+          <span>Biowaiver extension for BCS Class IV molecules</span>
+        </button>
+        <button class="opt" type="button" data-index="1" role="radio" aria-checked="false" tabindex="-1" aria-label="Option B: Rapid disintegration into coarse primary granules">
+          <b>B</b>
+          <span>Rapid disintegration into coarse primary granules</span>
+        </button>
+        <button class="opt" type="button" data-index="2" role="radio" aria-checked="false" tabindex="-1" aria-label="Option C: Micronization maximizing interfacial effective surface area A">
+          <b>C</b>
+          <span>Micronization maximizing interfacial effective surface area A</span>
+        </button>
+        <button class="opt" type="button" data-index="3" role="radio" aria-checked="false" tabindex="-1" aria-label="Option D: Elevating stagnant boundary layer hydrodynamic thickness h">
+          <b>D</b>
+          <span>Elevating stagnant boundary layer hydrodynamic thickness h</span>
+        </button>
+      </div>
+      <!-- html-validate-enable prefer-native-element -->
+
+      <!-- Result / Feedback Banner -->
+      <div id="feedbackBanner" class="feedback-banner" role="status" aria-live="polite"></div>
+
+      <!-- Interactive Controls -->
+      <div class="controls-bar">
+        <div class="btn-group">
+          <button id="evaluateBtn" class="action-btn primary" type="button">Evaluate Answer</button>
+          <button id="resetSelectionBtn" class="action-btn ghost" type="button">Reset</button>
+          <button id="cycleQuestionsBtn" class="action-btn ghost" type="button">Next Question</button>
+        </div>
+        <div class="btn-group">
+          <span class="pill">Keyboard: [↑] [↓] [1–4] [A–D] [Enter]</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Visual States Gallery: All 5 Required Interactive & Feedback States -->
+    <section class="panel" aria-labelledby="galleryTitle">
+      <div class="panel-header">
+        <h2 id="galleryTitle" class="panel-title">Component Specification &amp; States Gallery</h2>
+        <p class="prompt-text">Side-by-side verification of all 5 visual theme states in dark mode.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <div class="gallery-caption">
+            <span>State 1</span> Default / Resting
+          </div>
+          <button class="opt" type="button" disabled>
+            <b>A</b>
+            <span>Translucent frosted glass fill with specular highlight</span>
+          </button>
+        </div>
+
+        <div class="gallery-card">
+          <div class="gallery-caption">
+            <span>State 2</span> Hover Micro-Interaction
+          </div>
+          <button class="opt state-hover" type="button">
+            <b>B</b>
+            <span>Tactile slide translateX(4px) + soft lavender rim</span>
+          </button>
+        </div>
+
+        <div class="gallery-card">
+          <div class="gallery-caption">
+            <span>State 3</span> Selected State (.picked)
+          </div>
+          <button class="opt picked" type="button">
+            <b>C</b>
+            <span>Lavender halo glow + 3-stop luminous gradient badge</span>
+          </button>
+        </div>
+
+        <div class="gallery-card">
+          <div class="gallery-caption">
+            <span>State 4</span> Result: Correct (.right)
+          </div>
+          <button class="opt right" type="button" disabled>
+            <b>C</b>
+            <span>Emerald green glowing border, badge, and soft halo</span>
+          </button>
+        </div>
+
+        <div class="gallery-card">
+          <div class="gallery-caption">
+            <span>State 5</span> Result: Wrong (.wrong)
+          </div>
+          <button class="opt wrong" type="button" disabled>
+            <b>D</b>
+            <span>Coral red glowing border, badge, and soft halo</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Vanilla JavaScript Interaction Engine -->
+  <script>
+    (function () {
+      "use strict";
+
+      const QUESTION_BANK = [
+        {
+          subject: "Biopharmaceutics",
+          prompt: "Under sink conditions, which formulation modification maximizes the solid drug dissolution rate according to the Noyes-Whitney equation (dM/dt = D·A/h · Cs)?",
+          options: [
+            "Biowaiver extension for BCS Class IV molecules",
+            "Rapid disintegration into coarse primary granules",
+            "Micronization maximizing interfacial effective surface area A",
+            "Elevating stagnant boundary layer hydrodynamic thickness h"
+          ],
+          correctIndex: 2
+        },
+        {
+          subject: "Pharmacopeial Testing",
+          prompt: "According to the FDA Biopharmaceutics Classification System (BCS), which condition defines a drug as 'Highly Soluble'?",
+          options: [
+            "Highest dose dissolves in <= 250 mL water across pH 1.0 to 6.8 at 37 °C",
+            "Aqueous solubility exceeds 10 mg/mL at neutral pH 7.0 only",
+            "Dissolves completely within 5 minutes in simulated gastric fluid (pH 1.2)",
+            "Systemic fraction absorbed (Fa) reaches 85% or greater in human bioavailability"
+          ],
+          correctIndex: 0
+        },
+        {
+          subject: "Tablet Technology",
+          prompt: "Which formulation or mechanical defect is the primary cause of tablet capping during high-speed rotary compression?",
+          options: [
+            "Excessive lubricant concentration exceeding 2% magnesium stearate",
+            "Air entrapment within the die cavity and excessive fine granules (<100 mesh)",
+            "Inadequate binder hydration resulting in weak inter-particle capillary bridges",
+            "Granule moisture content exceeding 5% loss on drying"
+          ],
+          correctIndex: 1
+        }
+      ];
+
+      const LETTERS = ["A", "B", "C", "D"];
+      let activeQuestionIdx = 0;
+      let selectedOptionIdx = null;
+      let isEvaluated = false;
+
+      const grid = document.getElementById("optionCardGrid");
+      const evalBtn = document.getElementById("evaluateBtn");
+      const resetBtn = document.getElementById("resetSelectionBtn");
+      const nextBtn = document.getElementById("cycleQuestionsBtn");
+      const feedback = document.getElementById("feedbackBanner");
+      const promptEl = document.getElementById("questionPrompt");
+
+      // Audio tone synthesizer via Web Audio API (lazy initialization on user gesture)
+      let audioCtx = null;
+
+      function playHaptic(freq, dur) {
+        dur = dur || 0.08;
+        try {
+          if (!audioCtx && typeof window !== "undefined") {
+            const AudioCtor = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtor) audioCtx = new AudioCtor();
+          }
+          if (!audioCtx) return;
+          if (audioCtx.state === "suspended") {
+            audioCtx.resume().catch(function () {});
+          }
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + dur);
+        } catch (e) {
+          // Audio blocked or unsupported
+        }
+      }
+
+      function renderQuestion() {
+        const cur = QUESTION_BANK[activeQuestionIdx];
+        promptEl.textContent = cur.prompt;
+        selectedOptionIdx = null;
+        isEvaluated = false;
+        feedback.className = "feedback-banner";
+        feedback.textContent = "";
+
+        grid.innerHTML = cur.options.map(function (txt, i) {
+          return '<button class="opt" type="button" data-index="' + i + '" role="radio" aria-checked="false" tabindex="' + (i === 0 ? "0" : "-1") + '" aria-label="Option ' + LETTERS[i] + ': ' + txt + '">' +
+            '<b>' + LETTERS[i] + '</b>' +
+            '<span>' + txt + '</span>' +
+            '</button>';
+        }).join("");
+
+        wireOptionListeners();
+      }
+
+      function selectOption(idx) {
+        if (isEvaluated) return;
+        selectedOptionIdx = idx;
+        playHaptic(659.25, 0.09);
+
+        const buttons = grid.querySelectorAll(".opt");
+        buttons.forEach(function (btn, i) {
+          const isSelected = (i === idx);
+          btn.classList.toggle("picked", isSelected);
+          btn.classList.toggle("active", isSelected);
+          btn.setAttribute("aria-checked", isSelected ? "true" : "false");
+          btn.setAttribute("tabindex", isSelected ? "0" : "-1");
+        });
+
+        feedback.className = "feedback-banner";
+        feedback.textContent = "";
+      }
+
+      function wireOptionListeners() {
+        const buttons = grid.querySelectorAll(".opt");
+        buttons.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            const idx = Number(btn.getAttribute("data-index"));
+            selectOption(idx);
+          });
+
+          // Keyboard navigation within the radiogroup
+          btn.addEventListener("keydown", function (e) {
+            const idx = Number(btn.getAttribute("data-index"));
+            let targetIdx = null;
+
+            if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+              e.preventDefault();
+              targetIdx = (idx + 1) % buttons.length;
+            } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+              e.preventDefault();
+              targetIdx = (idx - 1 + buttons.length) % buttons.length;
+            } else if (e.key === " " || e.key === "Enter") {
+              e.preventDefault();
+              selectOption(idx);
+              return;
+            }
+
+            if (targetIdx !== null) {
+              buttons[targetIdx].focus();
+              selectOption(targetIdx);
+            }
+          });
+        });
+      }
+
+      // Global keyboard shortcuts (1-4, A-D) with modifier protection
+      document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
+        if (isEvaluated) return;
+
+        const key = e.key.toUpperCase();
+        const letterIdx = LETTERS.indexOf(key);
+        if (letterIdx !== -1) {
+          e.preventDefault();
+          const buttons = grid.querySelectorAll(".opt");
+          if (buttons[letterIdx]) {
+            buttons[letterIdx].focus();
+            selectOption(letterIdx);
+          }
+        } else if (["1", "2", "3", "4"].includes(e.key)) {
+          const numIdx = Number(e.key) - 1;
+          e.preventDefault();
+          const buttons = grid.querySelectorAll(".opt");
+          if (buttons[numIdx]) {
+            buttons[numIdx].focus();
+            selectOption(numIdx);
+          }
+        }
+      });
+
+      // Evaluation
+      evalBtn.addEventListener("click", function () {
+        if (isEvaluated) return;
+
+        if (selectedOptionIdx === null) {
+          feedback.className = "feedback-banner wrong visible";
+          feedback.textContent = "Please select an option before evaluating.";
+          playHaptic(220, 0.15);
+          return;
+        }
+
+        const cur = QUESTION_BANK[activeQuestionIdx];
+        isEvaluated = true;
+        const buttons = grid.querySelectorAll(".opt");
+
+        buttons.forEach(function (btn, i) {
+          btn.classList.remove("picked", "active");
+          if (i === cur.correctIndex) {
+            btn.classList.add("right");
+            btn.setAttribute("aria-label", "Option " + LETTERS[i] + ": " + cur.options[i] + " (Correct answer)");
+          } else if (i === selectedOptionIdx) {
+            btn.classList.add("wrong", "wrongpick");
+            btn.setAttribute("aria-label", "Option " + LETTERS[i] + ": " + cur.options[i] + " (Your choice, incorrect)");
+          } else {
+            btn.classList.add("dimmed");
+            btn.setAttribute("aria-disabled", "true");
+          }
+        });
+
+        if (selectedOptionIdx === cur.correctIndex) {
+          feedback.className = "feedback-banner correct visible";
+          feedback.textContent = "Correct! Option " + LETTERS[selectedOptionIdx] + " is verified mechanism.";
+          playHaptic(880, 0.16);
+        } else {
+          feedback.className = "feedback-banner wrong visible";
+          feedback.textContent = "Incorrect. Selected Option " + LETTERS[selectedOptionIdx] + ". Correct answer is Option " + LETTERS[cur.correctIndex] + ".";
+          playHaptic(240, 0.2);
+        }
+      });
+
+      // Reset
+      resetBtn.addEventListener("click", function () {
+        const cur = QUESTION_BANK[activeQuestionIdx];
+        selectedOptionIdx = null;
+        isEvaluated = false;
+        feedback.className = "feedback-banner";
+        feedback.textContent = "";
+
+        const buttons = grid.querySelectorAll(".opt");
+        buttons.forEach(function (btn, i) {
+          btn.classList.remove("picked", "active", "right", "wrong", "wrongpick", "dimmed");
+          btn.setAttribute("aria-checked", "false");
+          btn.removeAttribute("aria-disabled");
+          btn.setAttribute("tabindex", i === 0 ? "0" : "-1");
+          btn.setAttribute("aria-label", "Option " + LETTERS[i] + ": " + cur.options[i]);
+        });
+        playHaptic(440, 0.06);
+      });
+
+      // Cycle questions
+      nextBtn.addEventListener("click", function () {
+        activeQuestionIdx = (activeQuestionIdx + 1) % QUESTION_BANK.length;
+        renderQuestion();
+        playHaptic(520, 0.08);
+      });
+
+      // Initial render
+      renderQuestion();
+
+      // Expose component interface for modular integrations & tests
+      window.OptionCardComponent = {
+        selectOption: selectOption,
+        evaluate: function () { evalBtn.click(); },
+        reset: function () { resetBtn.click(); },
+        nextQuestion: function () { nextBtn.click(); },
+        getSelected: function () { return selectedOptionIdx; },
+        isEvaluated: function () { return isEvaluated; }
+      };
+    })();
+  </script>
+</body>
+</html>

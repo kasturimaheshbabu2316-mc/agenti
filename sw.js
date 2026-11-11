@@ -3,12 +3,15 @@
    Cache-first static shell strategy with offline fallbacks.
    ========================================================================== */
 
-const CACHE_NAME = "pmm3-v3.1.0";
+const CACHE_NAME = "pmm3-v3.2.0";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./admin.html",
   "./live.html",
+  "./mcq.html",
+  "./hub.html",
+  "./option-card.html",
   "./style.css",
   "./store.js",
   "./sync.js",

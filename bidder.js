@@ -39,11 +39,22 @@ function answerBody(lot, mode, a) {
       return `<div class="mrow"><span class="ml"><b>${i + 1}</b>${esc(p.l)}</span><span class="mr ${ok ? "right" : "wrongpick"}">${c != null && lot.pairs[c] ? esc(lot.pairs[c].r) : "No answer"}</span>${ok ? "" : `<small>Correct: ${esc(p.r)}</small>`}</div>`;
     }).join("") + "</div>";
   }
-  return '<div class="opts">' + lot.opts.map((o, i) => {
+  const isRadiogroup = mode === "answer";
+  const groupAria = isRadiogroup ? ' role="radiogroup" aria-label="Multiple choice options"' : ' aria-label="Reviewed multiple choice options"';
+  return '<div class="opts"' + groupAria + '>' + lot.opts.map((o, i) => {
     let cls = "opt";
     if (mode === "answer" && pick === i) cls += " picked";
     if (mode === "review") { if (i === lot.correct) cls += " right"; else if (a && a.choice === i) cls += " wrongpick"; }
-    return `<button class="${cls}" ${mode === "answer" ? `data-opt="${i}"` : "disabled"} type="button"><b>${LETTERS[i]}</b><span>${esc(o)}</span></button>`;
+    let aria = "";
+    if (mode === "answer") {
+      aria = `role="radio" aria-checked="${pick === i ? "true" : "false"}"`;
+    } else {
+      let suffix = "";
+      if (i === lot.correct) suffix = " (Correct answer)";
+      else if (a && a.choice === i) suffix = " (Your choice, incorrect)";
+      aria = `aria-label="${LETTERS[i]}: ${esc(o)}${suffix}"`;
+    }
+    return `<button class="${cls}" ${mode === "answer" ? `data-opt="${i}"` : "disabled"} ${aria} type="button"><b>${LETTERS[i]}</b><span>${esc(o)}</span></button>`;
   }).join("") + "</div>";
 }
 
@@ -369,7 +380,11 @@ $("#hero").addEventListener("click", (e) => {
     sel = list[(i + Number(nav.dataset.nav) + list.length) % list.length].id; pick = null; renderHero();
   }
   if (more) { const box = more.closest(".about"); box.classList.toggle("open"); more.textContent = box.classList.contains("open") ? "Show less" : "Read more"; }
-  if (opt) { pick = Number(opt.dataset.opt); renderHero(); }
+  if (opt) {
+    pick = Number(opt.dataset.opt);
+    if (window.PMM_SFX && PMM_SFX.select) PMM_SFX.select();
+    renderHero();
+  }
   if (lock) lockAnswer();
   if (ragExp) {
     const lotId = Number(ragExp.dataset.ragExplain);

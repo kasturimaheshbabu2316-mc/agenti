@@ -66,7 +66,7 @@ function revealHTML(lot) {
   } else {
     body = `<div class="opts">${lot.opts.map((o, i) => {
       let cls = "opt"; if (i === lot.correct) cls += " right"; else if (a && a.choice === i) cls += " wrongpick";
-      return `<div class="${cls}"><b>${LETTERS[i]}</b><span>${esc(o)}</span></div>`;
+      return `<button class="${cls}" type="button" disabled><b>${LETTERS[i]}</b><span>${esc(o)}</span></button>`;
     }).join("")}</div>`;
   }
   return `<div class="reveal">${mediaHTML(lot)}<p class="qtext">${esc(lot.q)}</p>${body}</div>`;
